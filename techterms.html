@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<head>
+    
+</head>
+<body>
+    <table id="allTerms" class="table table-bordered table-hover table-condensed">
+    </table>
+
+    <style>
+        .hidden {            
+            display: none;
+        } 
+        .shown {                                    
+            display:block;
+        }
+        td.term {            
+            font-size: 6vh;
+            font-weight: bold;                                    
+        }   
+        td.definition {
+            font-size: 4vh;            
+            font-weight: normal;            
+        }                        
+    </style>
+    <script id="swiper" src="./swiper.js"></script>       
+    <script id="main">
+
+        defaultDataFile = "./techterms2.csv";
+        
+        datafile = window.location.search;
+        if (datafile.length<=1){
+            datafile = defaultDataFile;
+        } else {
+            datafile = datafile.substr(1,datafile.length);
+        }
+
+        console.log(datafile);
+        localPath = (function(filename){ 
+            if (!filename) filename = '';
+            var _localPath = window.location.href;
+            return _localPath.substr(0, _localPath.lastIndexOf('/')+1) + filename;            
+        })();
+
+        function loadTextData(url, successfunction, errorfunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {                    
+                    successfunction(xhr.responseText);
+                }
+            };
+            xhr.onerror = (errorfunction)?errorfunction : function() {
+                console.log("loadTextData failed, error function unspecified");
+            };
+            xhr.open("GET", url);
+            xhr.send();
+        }
+
+        allTerms = [];
+
+        selectedIndex = 1;
+        selectedId = "term_" + selectedIndex.toString();
+
+        loadTextData(datafile, function(data) {
+            var lines = data.split('\n')
+            if (lines.length <= 1) return;
+            lines.forEach(function(line) {
+                if (line && line.length > 1) {
+                    var lineparts = line.split('"');
+                    if (lineparts.length != 5) return;
+                    var term = lineparts[1];
+                    var definition = lineparts[3].toString().replace(/\\n/gi,'<br>')
+                    allTerms.push({ term : term, definition : definition });
+                }
+            });
+            num_cards = allTerms.length;
+            for(var i=num_cards - 1; i >= 0; i--) {
+                j = Math.floor(Math.random() * (i + 1));
+                t = allTerms[i];
+                allTerms[i] = allTerms[j];
+                allTerms[j] = t;
+            }
+            var index = 0;
+            allTerms.forEach(function(techTerm){
+                var table = document.getElementById("allTerms");
+                var row = table.insertRow(-1);
+                row.id = "term_" + (index + 1).toString();
+                var classList = row.id + " hidden";
+                row.className = classList;
+                var newTerm = row.insertCell(0);
+                var definition = row.insertCell(1);                
+                newTerm.innerText = techTerm.term;
+                newTerm.className = classList + " term";
+                definition.innerHTML = techTerm.definition;
+                definition.className = classList + " definition";
+                index = index + 1;
+            });
+            showSelectedCard();
+            document.dispatchEvent(new Event('dataLoaded'));          
+        });
+
+        function showSelectedCard() {
+            document.querySelectorAll("."+selectedId).forEach( function(item) {
+                item.classList.toggle('shown');
+                item.classList.toggle('hidden');
+                toggle_definition();
+            });
+        }
+
+        function toggle_definition() {
+            document.querySelectorAll(".definition." + selectedId)[0].classList.toggle('shown');
+            document.querySelectorAll(".definition." + selectedId)[0].classList.toggle('hidden');
+        }
+
+        function changeTermShown() {
+            document.querySelectorAll(".shown").forEach( function(item) {
+                item.classList.toggle("shown");
+                item.classList.toggle("hidden");                
+            });
+            showSelectedCard();
+            return;
+        }
+            
+        document.addEventListener('keydown', function(event){            
+            var newevent = {};
+            if (event.keyCode == 32) {
+                toggle_definition();
+            } else
+            if (event.keyCode == 37 || event.keyCode == 38) {
+                previousCard();
+            } else
+            if (event.keyCode == 39 || event.keyCode == 40) {
+                nextCard();
+            }            
+        });
+
+        document.addEventListener('click', function(event){            
+            toggle_definition();
+            return;            
+        });
+
+        function previousCard() {
+            console.log(selectedIndex, selectedId);
+            selectedIndex = selectedIndex - 1;
+            if (selectedIndex >= num_cards) selectedIndex = 1;
+            if (selectedIndex <= 0) selectedIndex = num_cards - 1;            
+            selectedId = "term_" + selectedIndex.toString();
+            changeTermShown();
+        }
+        function nextCard() {
+            console.log(selectedIndex, selectedId);
+            selectedIndex = selectedIndex + 1;
+            if (selectedIndex >= num_cards) selectedIndex = 1;
+            if (selectedIndex <= 0) selectedIndex = num_cards - 1;
+            selectedId = "term_" + selectedIndex.toString();
+            changeTermShown();
+        }
+        document.addEventListener('swipeLeft', function(event){
+            previousCard();
+        });
+        /* document.addEventListener('swipeUp', function(event){
+            previousCard();
+        }); */
+        document.addEventListener('swipeRight', function(event){
+            nextCard();
+        });
+        /* document.addEventListener('swipeDown', function(event){
+            nextCard();
+        }); */
+        
+        document.querySelectorAll("script").forEach(function(item){if (!item.id) item.parentElement.removeChild(item); });
+    </script>
+    
+</body>
+
+</html>
