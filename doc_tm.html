@@ -1,0 +1,194 @@
+<html>
+<head>
+    <style>
+        @font-face{
+            font-family:'digital-clock-font';
+            src: url('digital-7.monoitalic.ttf');
+        }
+
+        body {
+            background-image: url("redox_03.png");
+            vertical-align: top;
+        }        
+
+        div {
+            float: left;
+            height: auto;
+            display: block;
+        }
+
+        .clock {
+            font-family: 'digital-clock-font';
+            float: inline-block;                                 
+        }
+
+        .display {
+            background-color: black;  
+            font-size: xxx-large;
+        }
+
+        .green {
+            color: green;
+        }
+
+        .red {
+            color: orangered;            
+        }
+
+        .yellow {
+            color: yellow;
+        }
+
+        .dymolabel {
+            font-family: "trebuchet ms",verdana,sans-serif;
+            color: #fff;
+            background: maroon;
+            display: inline-block;
+        }
+
+        table {            
+        }
+
+        td {
+            text-align: center;
+        }
+
+        td.am-pm {            
+        }
+
+        am-pm {
+            clear: left;
+            display: inline-block;
+        }
+
+        input {
+            display: inline-block;
+        }
+
+        
+</style>
+</head>
+
+<body>
+    <table class='clock red system'>
+        <tr>
+            <td><span class='dymolabel'>MONTH</span></td>
+            <td><span class='dymolabel'>DAY</span></td>
+            <td><span class='dymolabel'>YEAR</span></td>
+            <td></td>
+            <td><span class='dymolabel'>HOUR</span></td>
+            <td><span class='dymolabel'>MIN</span></td>
+        </tr>
+        <tr>
+            <td class='month'><div class='display'></div></td>
+            <td class='day'><div class='display'></div></td>
+            <td class='year'><div class='display'></div></td>
+            <td class='am-pm'>
+                <div>
+                    <div class="dymolabel">AM</div><br>
+                    <input type="radio" name="am"/>
+                </div><br>
+                <div>
+                    <div class="dymolabel">PM</div><br>
+                    <input type="radio" name="pm"/>
+                </div>
+            </td>
+            <td class='hour'><div class='display'></div></td>
+            <td class='minute'><div class='display'></div></td>      
+        </tr>
+    </table>
+    <table class='clock green tape'>
+        <tr>
+            <td><span class='dymolabel'>MONTH</span></td>
+            <td><span class='dymolabel'>DAY</span></td>
+            <td><span class='dymolabel'>YEAR</span></td>
+            <td></td>
+            <td><span class='dymolabel'>HOUR</span></td>
+            <td><span class='dymolabel'>MIN</span></td>
+        </tr>
+        <tr>
+            <td class='month'><div class='display'></div></td>
+            <td class='day'><div class='display'></div></td>
+            <td class='year'><div class='display'></div></td>
+            <td class='am-pm'>
+                <div>
+                    <div class="dymolabel">AM</div><br>
+                    <input type="radio" name="am"/>
+                </div><br>
+                <div>
+                    <div class="dymolabel">PM</div><br>
+                    <input type="radio" name="pm"/>
+                </div>
+            </td>
+            <td class='hour'><div class='display'></div></td>
+            <td class='minute'><div class='display'></div></td>      
+        </tr>
+    </table>
+    <table class='clock yellow actual'>
+        <tr>
+            <td><span class='dymolabel'>MONTH</span></td>
+            <td><span class='dymolabel'>DAY</span></td>
+            <td><span class='dymolabel'>YEAR</span></td>
+            <td></td>
+            <td><span class='dymolabel'>HOUR</span></td>
+            <td><span class='dymolabel'>MIN</span></td>
+        </tr>
+        <tr>
+            <td class='month'><div class='display'></div></td>
+            <td class='day'><div class='display'></div></td>
+            <td class='year'><div class='display'></div></td>
+            <td class='am-pm'>
+                <div>
+                    <div class="dymolabel">AM</div><br>
+                    <input type="radio" name="am"/>
+                </div><br>
+                <div>
+                    <div class="dymolabel">PM</div><br>
+                    <input type="radio" name="pm"/>
+                </div>
+            </td>
+            <td class='hour'><div class='display'></div></td>
+            <td class='minute'><div class='display'></div></td>      
+        </tr>
+    </table>
+    
+</body>
+<script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script>
+    // MONTH DAY YEAR  AM/PM HOUR MIN 
+    //  XXX  ##  ####   */*    ##:##
+
+    var system_time, tape_time, actual_time;
+
+    function getMonth(number) {
+        var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        return months[number];
+    }
+
+    function init_display(selector, month, day, year, ampm, hour, minute) {
+        var _selector_ = "table." + selector + " tr td.";
+        $(_selector_ + "month div.display").text(month);
+        $(_selector_ + "day div.display").text(day);
+        $(_selector_ + "year div.display").text(year);
+        $(_selector_ + "hour div.display").text(hour);
+        $(_selector_ + "minute div.display").text(minute);
+    }
+
+    $(document).ready(function(a){
+        var n = new Date();
+        var month = getMonth(n.getMonth());
+        var day = ("0" + n.getDate()).slice(-2);
+        var year = n.getFullYear();
+        var hour = n.getHours();
+        var min = n.getMinutes();
+        init_display("system", month, day, year, ' ', hour, min);
+        init_display("tape", month, day, year, ' ', hour, min);
+        init_display("actual", month, day, year, ' ', hour, min);
+    })
+    
+</script>
+</html>
