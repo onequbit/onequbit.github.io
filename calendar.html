@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 
 <body>
-    <div id="calendar">
-
-    </div>
+    <div id="calendar"></div>
 </body>
 
 <script>
@@ -46,7 +46,7 @@
         this.setDate(this.getDate()+1);
     }
 
-    Date.nthDayOfMonth = function(count, day, month, year)
+    Date.nthDayOfMonth = function(count, day, month, year, name = "")
     {
         if (year == null) year = new Date().getFullYear();
         var date = new Date(year, month, 1);
@@ -57,10 +57,11 @@
             date.nextDate();
             if (date.getWeekDay() == WEEKDAYS[day]) counter++;
         }
+        date.holidayName = name;
         return date;
     }
 
-    Date.lastDayOfMonth = function(day, month, year)
+    Date.lastDayOfMonth = function(day, month, year, name = "")
     {        
         if (year == null) year = new Date().getFullYear();
         var date = new Date(year, month, 1);
@@ -74,7 +75,9 @@
             date.nextDate();            
             if (date.getMonth() > month) break;                     
         }
-        return list.pop();
+        date = list.pop();
+        date.holidayName = name;
+        return date;
     }
 
     Date.prototype.backDate = function(offset)
@@ -84,7 +87,7 @@
         return this;
     }
 
-    Date.findSetHoliday = function(month, date, year)
+    Date.findSetHoliday = function(month, date, year, name = "")
     {
         if (year == null) year = new Date().getFullYear();
         var holiday = new Date(year, month, date);
@@ -96,6 +99,7 @@
         {
             holiday.nextDate();
         }
+        holiday.holidayName = name;
         return holiday; 
     }
 
@@ -106,6 +110,7 @@
         newDate.setFullYear(year);
         newDate.setDate(1);
         newDate.setMonth(0);
+        newDate.holidayName = "New Years Day"
         return newDate;
     }
 
@@ -121,15 +126,15 @@
         
         var holidays = [
             Date.NewYear(calendarYear(JANUARY)),
-            Date.nthDayOfMonth(3,MONDAY, JANUARY, calendarYear(JANUARY)),
-            Date.nthDayOfMonth(3,MONDAY, FEBRUARY, calendarYear(FEBRUARY)),
-            Date.lastDayOfMonth(MONDAY, MAY, calendarYear(MAY)),        
-            Date.findSetHoliday(JULY,4,calendarYear(JULY)),
-            Date.nthDayOfMonth(1,MONDAY,SEPTEMBER, calendarYear(SEPTEMBER)),
-            Date.nthDayOfMonth(2,MONDAY,OCTOBER, calendarYear(OCTOBER)),
-            Date.findSetHoliday(NOVEMBER,11, calendarYear(NOVEMBER)),
-            Date.nthDayOfMonth(4,THURSDAY,NOVEMBER, calendarYear(NOVEMBER)),
-            Date.findSetHoliday(DECEMBER,25, calendarYear(DECEMBER))
+            Date.nthDayOfMonth(3,MONDAY, JANUARY, calendarYear(JANUARY), "Martin Luther King's Birthday"),
+            Date.nthDayOfMonth(3,MONDAY, FEBRUARY, calendarYear(FEBRUARY), "President's Day"),
+            Date.lastDayOfMonth(MONDAY, MAY, calendarYear(MAY), "Memorial Day"),        
+            Date.findSetHoliday(JULY,4,calendarYear(JULY), "Independence Day"),
+            Date.nthDayOfMonth(1,MONDAY,SEPTEMBER, calendarYear(SEPTEMBER), "Labor Day"),
+            Date.nthDayOfMonth(2,MONDAY,OCTOBER, calendarYear(OCTOBER), "Columbus Day"),
+            Date.findSetHoliday(NOVEMBER,11, calendarYear(NOVEMBER), "Veteran's Day"),
+            Date.nthDayOfMonth(4,THURSDAY,NOVEMBER, calendarYear(NOVEMBER), "Thanksgiving Day"),
+            Date.findSetHoliday(DECEMBER,25, calendarYear(DECEMBER), "Christmas Day")
         ];
 
         return holidays;
@@ -148,6 +153,7 @@
 
     Date.fromISODate = function(str)
     {
+        if (str == null || str == "") return null;
         var newDate = null;
         try
         {
@@ -166,7 +172,9 @@
 
     Date.prototype.getCalendarStr = function()
     {
-        return this.getWeekDay() + " " + this.getMonthStr() + " " + this.getDate() + ", " + this.getFullYear();
+        if (this.holidayName == null) this.holidayName = "";
+        var calendarStr = this.getWeekDay() + " " + this.getMonthStr() + " " + this.getDate() + ", " + this.getFullYear();
+        return calendarStr;
     }
 
     class Calendar
@@ -182,8 +190,7 @@
         }
 
         insertDay(someDate)
-        {
-            console.log("insertDay: ", someDate);
+        {            
             var day = document.createElement("div");
             day.id = someDate.toISODate();
             day.innerText = someDate.getCalendarStr();        
@@ -225,12 +232,12 @@
             }
 
             Date.getFederalHolidays(this.myStartDate).forEach(function(date)
-            {
-                console.log(date);
+            {            
                 var calendarDate = document.getElementById(date.toISODate())
                 if (calendarDate != null)
                 {
                     calendarDate.classList.add("holiday");
+                    calendarDate.innerText = calendarDate.innerText + " " + date.holidayName                    
                 }            
             });
         }
