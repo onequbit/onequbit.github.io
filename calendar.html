@@ -4,7 +4,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="manifest" href="/calendar_manifest.json">
 </head>
 
 <body>
@@ -322,6 +321,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function(event) { 
+        screen.orientation.lock('landscape');
         main();
     });
 
