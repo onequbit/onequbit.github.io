@@ -7,6 +7,17 @@
 </head>
 
 <body>
+    <div class="controls">
+        <button id="btnLastYear">Previous Year</button>
+    </div>
+    <div class="controls">
+        <label id="currentYear"></label>
+    </div>
+    <div class="controls">
+        <button id="btnNextYear">Next Year</button>
+    </div>
+    <br>
+    <hr>
     <div id="calendar"></div>
 </body>
 
@@ -36,6 +47,8 @@
     const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+    // 2012 Federal Pay Period 1 : 20120101
+    
     Date.prototype.getWeekDay = function()
     {        
         return WEEKDAYS[this.getDay()];
@@ -109,22 +122,22 @@
         if (year == null) year = new Date().getFullYear();
         newDate.setFullYear(year);
         newDate.setDate(1);
-        newDate.setMonth(0);
-        newDate.holidayName = "New Years Day"
-        return newDate;
+        newDate.setMonth(JANUARY);
+        newDate.holidayName = "New Year's Day"
+        return newDate;        
     }
 
     Date.getFederalHolidays = function(startDate)
     {
         function calendarYear(month)
         {
-            if (month < startDate.getMonth())
+            if (month < startDate.getMonth()) 
                 return startDate.getFullYear() + 1;
             else
                 return startDate.getFullYear();
         }
         
-        var holidays = [
+        return [
             Date.NewYear(calendarYear(JANUARY)),
             Date.nthDayOfMonth(3,MONDAY, JANUARY, calendarYear(JANUARY), "Martin Luther King's Birthday"),
             Date.nthDayOfMonth(3,MONDAY, FEBRUARY, calendarYear(FEBRUARY), "President's Day"),
@@ -136,8 +149,6 @@
             Date.nthDayOfMonth(4,THURSDAY,NOVEMBER, calendarYear(NOVEMBER), "Thanksgiving Day"),
             Date.findSetHoliday(DECEMBER,25, calendarYear(DECEMBER), "Christmas Day")
         ];
-
-        return holidays;
     }
     
     Date.prototype.getMonthStr = function()
@@ -145,10 +156,14 @@
         return MONTHS[this.getMonth()];
     }
 
+    Date.prototype.toISODateStr = function()
+    {
+        return this.toISOString().split('T')[0];        
+    }
+
     Date.prototype.toISODate = function()
     {
-        var str = this.toISOString().split('T')[0].replace(/-/g,'');
-        return str;
+        return this.toISOString().split('T')[0].replace(/-/g,'');        
     }
 
     Date.fromISODate = function(str)
@@ -156,17 +171,24 @@
         if (str == null || str == "") return null;
         var newDate = null;
         try
-        {
+        {            
             var year = str.substr(0,4);
-            var month = parseInt(str.substr(4,2))-1;
-            var date = str.substr(6,2);
-            newDate = new Date(year, month, date);
+            newDate = new Date(year,JANUARY,1);
+            if (str.length > 4)
+            {
+                var month = parseInt(str.substr(4,2))-1;
+                newDate.setMonth(month);
+            }            
+            if (str.length == 8)
+            {
+                var date = str.substr(6,2);
+                newDate.setDate(date);
+            }            
         }
         catch (exception)
         {
-            console.log(exception);
-            return null;
-        }
+            console.log(exception);            
+        }        
         return newDate;
     }
 
@@ -232,7 +254,7 @@
             }
 
             Date.getFederalHolidays(this.myStartDate).forEach(function(date)
-            {            
+            {                            
                 var calendarDate = document.getElementById(date.toISODate())
                 if (calendarDate != null)
                 {
@@ -240,16 +262,39 @@
                     calendarDate.innerText = calendarDate.innerText + " " + date.holidayName                    
                 }            
             });
-        }
+        }        
+    }
+
+    function doButtonClick(date)
+    {
+        var url = window.location.href.split('?')[0] + "?" + date.toISODate();
+        window.location.href = url;
     }
        
     function main() 
     {
         var args = window.location.search.substring(1) || null;
         var start = Date.fromISODate(args) || Date.NewYear();
+        document.getElementById("currentYear").innerText = start.toISODateStr();
 
-        var calendar = new Calendar(divId = "calendar", startDate = start);        
-        
+        var lastyear = new Date(start);
+        lastyear.setFullYear(start.getFullYear() - 1);
+        document.getElementById("btnLastYear").innerText = lastyear.toISODateStr();
+        document.getElementById("btnLastYear").onclick = function(event)
+        {
+            doButtonClick(lastyear);
+        }
+
+        var nextyear = new Date(start);
+        nextyear.setFullYear(start.getFullYear() + 1);
+        document.getElementById("btnNextYear").innerText = nextyear.toISODateStr();
+        document.getElementById("btnNextYear").onclick = function(event)
+        {
+            doButtonClick(nextyear);
+        }
+
+        var calendar = new Calendar(divId = "calendar", startDate = start);
+
     }
 
     document.addEventListener("DOMContentLoaded", function(event) { 
@@ -266,10 +311,15 @@
     div.date {
         float: left;
         border : 1px solid black;
-        height: 24vh;
+        height: 20vh;
         width: 13vw;
         padding : 1px;
         display: inline;
+    }
+
+    hr {
+        display: block;
+        clear: both;
     }
 
     div.sunday {
@@ -291,7 +341,10 @@
         background-color: #ddf;
     }
 
-
+    div.controls {
+        float: left;
+        margin: 5px;
+    }
 
 </style>
 </html>
