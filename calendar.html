@@ -16,6 +16,9 @@
     <div class="controls">
         <button id="btnNextYear">Next Year</button>
     </div>
+    <div class="controls">
+        <select id="selectMonth"></select>
+    </div>
     <br>
     <hr>
     <div id="calendar"></div>
@@ -265,11 +268,13 @@
         }        
     }
 
-    function doButtonClick(date)
+    function doDateRedirect(date)
     {
         var url = window.location.href.split('?')[0] + "?" + date.toISODate();
         window.location.href = url;
     }
+
+    
        
     function main() 
     {
@@ -282,7 +287,7 @@
         document.getElementById("btnLastYear").innerText = lastyear.toISODateStr();
         document.getElementById("btnLastYear").onclick = function(event)
         {
-            doButtonClick(lastyear);
+            doDateRedirect(lastyear);
         }
 
         var nextyear = new Date(start);
@@ -290,9 +295,27 @@
         document.getElementById("btnNextYear").innerText = nextyear.toISODateStr();
         document.getElementById("btnNextYear").onclick = function(event)
         {
-            doButtonClick(nextyear);
-        }
+            doDateRedirect(nextyear);
+        };
 
+        var selectMonth = document.getElementById("selectMonth");
+
+        MONTHS.forEach(function(month, index){            
+            var newMonth = document.createElement("option");
+            newMonth.value = index;
+            newMonth.text = month;
+            newMonth.classList.add("month_choice");
+            selectMonth.appendChild(newMonth);
+        });
+   
+        selectMonth.selectedIndex = start.getMonth();
+        selectMonth.onchange = function(event)
+        {
+            var month = event.target.selectedIndex;
+            var newDate = new Date(start.getFullYear(),month,1);
+            doDateRedirect(newDate);
+        };
+        
         var calendar = new Calendar(divId = "calendar", startDate = start);
 
     }
@@ -311,7 +334,7 @@
     div.date {
         float: left;
         border : 1px solid black;
-        height: 20vh;
+        height: 24vh;
         width: 13vw;
         padding : 1px;
         display: inline;
