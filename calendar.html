@@ -50,16 +50,29 @@
     const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+    const DAY = 1000 * 60 * 60 * 24;
+    const WEEK = DAY * 7;
+    const BIWEEK = WEEK * 2;
+    const YEAR = DAY * 365;
+    
     // 2012 Federal Pay Period 1 : 20120101
+
+    Number.prototype.toDigits = function(len) 
+    {
+        var str = this + '';
+        while (str.length < len)
+            str = '0' + str;
+        return str;
+    }
     
     Date.prototype.getWeekDay = function()
     {        
         return WEEKDAYS[this.getDay()];
     }
 
-    Date.prototype.nextDate = function()
+    Date.prototype.nextDate = function(days = 1)
     {
-        this.setDate(this.getDate()+1);
+        this.setDate(this.getDate()+days);        
     }
 
     Date.nthDayOfMonth = function(count, day, month, year, name = "")
@@ -153,6 +166,18 @@
             Date.findSetHoliday(DECEMBER,25, calendarYear(DECEMBER), "Christmas Day")
         ];
     }
+
+    Date.getDaysOffset = function(start, end)
+    {
+        return Math.round( (end - start) / DAY );
+    }
+
+    Date.prototype.addDaysOffset = function(days)
+    {        
+        var newDate = new Date(this);
+        newDate.nextDate(365);
+        return newDate;
+    }
     
     Date.prototype.getMonthStr = function()
     {        
@@ -171,10 +196,13 @@
 
     Date.fromISODate = function(str)
     {
-        if (str == null || str == "") return null;
         var newDate = null;
+        var not_a_number = str == null || str == "" || ( /^\d+$/.test(str) === false );
+        if (not_a_number) return null;        
         try
-        {            
+        {
+            if (str.length != 8) return null;
+
             var year = str.substr(0,4);
             newDate = new Date(year,JANUARY,1);
             if (str.length > 4)
@@ -186,12 +214,13 @@
             {
                 var date = str.substr(6,2);
                 newDate.setDate(date);
-            }            
+            }                 
         }
         catch (exception)
         {
-            console.log(exception);            
-        }        
+            console.log(exception); 
+            console.log(newDate);           
+        }                
         return newDate;
     }
 
@@ -202,16 +231,23 @@
         return calendarStr;
     }
 
+    const DEFAULTSTART = Date.NewYear();
+    const DEFAULTEND = Date.NewYear().addDaysOffset(365);
+    console.log("consts:", DEFAULTSTART, DEFAULTEND);
+
     class Calendar
     {
-        myStartDate = new Date();
+        myStartDate = null;
+        myEndDate = null;
         myDivId = "calendar";
     
-        constructor(divId = "calendar", startDate = new Date())
+        constructor(divId = "calendar", startDate = DEFAULTSTART, endDate = DEFAULTEND)
         {
             this.myStartDate = new Date(startDate);
+            this.myEndDate = new Date(endDate);
             this.myDivId = divId;
-            this.draw();           
+            this.draw();
+            console.log(JSON.stringify(this));           
         }
 
         insertDay(someDate)
@@ -220,12 +256,13 @@
             day.id = someDate.toISODate();
             day.innerText = someDate.getCalendarStr();        
             day.classList.add("date");  
+            
+            var isSunday = someDate.getDay() === 0;
+            var isSaturday = someDate.getDay() === 6;
+            var isWeekend = isSaturday || isSunday;
 
             if (!someDate.isBackdate)
-            {
-                var isSunday = someDate.getDay() === 0;
-                var isSaturday = someDate.getDay() === 6;
-                var isWeekend = isSaturday || isSunday;
+            {                
                 if (isWeekend) day.classList.add("weekend");
                 if (isSunday) day.classList.add("sunday");
                 if (isSaturday) day.classList.add("saturday");  
@@ -236,12 +273,16 @@
             } 
             
             var calendar = document.getElementById(this.myDivId);
+            if (isSunday) {
+                var bump = document.createElement("div");
+                bump.classList.add("week");
+                if (calendar != null) calendar.appendChild(bump);
+            }
             if (calendar != null) calendar.appendChild(day);
         }    
 
         draw()
         {
-            var days = 365;
             var offsetDays = this.myStartDate.getDay();
             for (var offset = offsetDays; offset > 0; offset--) 
             {
@@ -249,12 +290,14 @@
                 this.insertDay(date.backDate(offset));
             }
 
+            var days = Date.getDaysOffset(this.myStartDate, this.myEndDate);
             var date = new Date(this.myStartDate);
             for (var count = 0; count <= days; count++) 
             {
                 this.insertDay(date);
                 date.nextDate();
             }
+            console.log("last date:", date);
 
             Date.getFederalHolidays(this.myStartDate).forEach(function(date)
             {                            
@@ -265,37 +308,84 @@
                     calendarDate.innerText = calendarDate.innerText + " " + date.holidayName                    
                 }            
             });
+
+            var weeks = document.getElementsByClassName("week");
+            var counter = 1;             
+            for (var week of weeks) 
+            { 
+                var name = "week" + counter.toDigits(2);
+                week.classList.add(name);
+                week.innerText = name;
+                counter++; 
+            }
         }        
     }
 
-    function doDateRedirect(date)
+    function doRedirect(params)
     {
-        var url = window.location.href.split('?')[0] + "?" + date.toISODate();
+        var url = window.location.href.split('?')[0] + "?" + params;
         window.location.href = url;
     }
 
-    
+    function getUrlParameters()
+    {
+        var urlStr = window.location.search.substring(1) || null;
+        if (urlStr == null) return {};
+        var params = {};
+        urlStr.split('&').forEach(function(param)
+        {
+            try
+            {
+                var key = param.split('=')[0];
+                var value = param.split('=')[1];
+                params[key] = value;
+            } catch(e)
+            {
+                console.log(e);
+            }
+        });
+        console.log("getUrlParameters:", params);
+        return params;
+    }
        
     function main() 
     {
-        var args = window.location.search.substring(1) || null;
-        var start = Date.fromISODate(args) || Date.NewYear();
+        var args = getUrlParameters();         
+        var start = Date.fromISODate(args.start) || DEFAULTSTART;
+        var dateSpan = 365;
+        var end = start.addDaysOffset(365);
+        if (args.hasOwnProperty('end')) {
+            end = Date.fromISODate(args.end);
+            dateSpan = Date.getDaysOffset(start, end);
+        }        
+        console.log("main:", args, start, end, dateSpan);
+
+        var calendar = new Calendar(divId = "calendar", startDate = start, endDate = end);
+        
         document.getElementById("currentYear").innerText = start.toISODateStr();
 
+        var lastYearButton = document.getElementById("btnLastYear");
         var lastyear = new Date(start);
         lastyear.setFullYear(start.getFullYear() - 1);
-        document.getElementById("btnLastYear").innerText = lastyear.toISODateStr();
-        document.getElementById("btnLastYear").onclick = function(event)
+        var lastyearEnd = new Date(lastyear);
+        lastyearEnd.nextDate(dateSpan);
+        console.log("lastyear:", lastyear, dateSpan, lastyearEnd);
+        lastYearButton.innerText = lastyear.toISODateStr();
+        lastYearButton.onclick = function(event)
         {
-            doDateRedirect(lastyear);
+            doRedirect("start=" + lastyear.toISODate() + "&end=" + lastyearEnd.toISODate());
         }
 
+        var nextYearButton = document.getElementById("btnNextYear");
         var nextyear = new Date(start);
         nextyear.setFullYear(start.getFullYear() + 1);
-        document.getElementById("btnNextYear").innerText = nextyear.toISODateStr();
-        document.getElementById("btnNextYear").onclick = function(event)
+        var nextyearEnd = new Date(nextyear);
+        nextyearEnd.nextDate(dateSpan);
+        console.log("nextyear:", nextyear, dateSpan, nextyearEnd);
+        nextYearButton.innerText = nextyear.toISODateStr();
+        nextYearButton.onclick = function(event)
         {
-            doDateRedirect(nextyear);
+            doRedirect("start=" + nextyear.toISODate() + "&end=" + nextyearEnd.toISODate());
         };
 
         var selectMonth = document.getElementById("selectMonth");
@@ -313,15 +403,12 @@
         {
             var month = event.target.selectedIndex;
             var newDate = new Date(start.getFullYear(),month,1);
-            doDateRedirect(newDate);
+            doRedirect("start=" + newDate.toISODate());
         };
         
-        var calendar = new Calendar(divId = "calendar", startDate = start);
-
     }
 
     document.addEventListener("DOMContentLoaded", function(event) { 
-        screen.orientation.lock('landscape');
         main();
     });
 
@@ -333,21 +420,31 @@
         display: table;
     }
 
+    #currentYear {
+        font-weight: bolder;
+    }
+
     div.date {
         float: left;
         border : 1px solid black;
         height: 24vh;
-        width: 13vw;
+        width: 12vw;
         padding : 1px;
         display: inline;
     }
 
-    hr {
+    div.week {
+        float: left;
+        border : 1px solid black;
+        height: 24vh;
+        width: 8vw;
+        padding : 1px;
+        /* display: inline; */
         display: block;
         clear: both;
     }
 
-    div.sunday {
+    hr {
         display: block;
         clear: both;
     }
