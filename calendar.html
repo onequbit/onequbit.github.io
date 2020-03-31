@@ -4,6 +4,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <link rel="manifest">{ "orientation":  "landscape" }</link>
 </head>
 
 <body>
@@ -324,14 +325,6 @@
         main();
     });
 
-    document.addEventListener("orientationchange", function(event){
-        switch(window.orientation) 
-        {  
-            case -90: case 90:  // Device is in landscape mode
-                break; 
-            default:            // Device is in portrait mode
-        }
-    });
 
 </script>
 
