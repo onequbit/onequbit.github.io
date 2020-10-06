@@ -4,40 +4,24 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>        
 </head>
 
-<body>    
-    <div id="letters_box" class="container">
-        <div id="row_1" class="container row">
-            <div class="cell"><div class="control" id="reload">&#x21ba;</div></div>
-            <div class="cell" id="tile_a"><x-tile>a</x-tile></div>
-            <div class="cell" id="tile_b"><x-tile>b</x-tile></div>
-            <div class="cell" id="tile_c"><x-tile>c</x-tile></div>
-            <div class="cell" id="tile_d"><x-tile>d</x-tile></div>
-            <div class="cell" id="tile_e"><x-tile>e</x-tile></div>
-            <div class="cell" id="tile_f"><x-tile>f</x-tile></div>
-            <div class="cell" id="tile_g"><x-tile>g</x-tile></div>
-            <div class="cell" id="tile_h"><x-tile>h</x-tile></div>
-            <div class="cell" id="tile_i"><x-tile>i</x-tile></div>
-            <div class="cell" id="tile_j"><x-tile>j</x-tile></div>
-            <div class="cell" id="tile_k"><x-tile>k</x-tile></div>
-            <div class="cell" id="tile_l"><x-tile>l</x-tile></div>
-            <div class="cell" id="tile_m"><x-tile>m</x-tile></div>
-            <div class="cell" id="tile_n"><x-tile>n</x-tile></div>
-            <div class="cell" id="tile_o"><x-tile>o</x-tile></div>
-            <div class="cell" id="tile_p"><x-tile>p</x-tile></div>
-            <div class="cell" id="tile_q"><x-tile>q</x-tile></div>
-            <div class="cell" id="tile_r"><x-tile>r</x-tile></div>
-            <div class="cell" id="tile_s"><x-tile>s</x-tile></div>
-            <div class="cell" id="tile_t"><x-tile>t</x-tile></div>
-            <div class="cell" id="tile_u"><x-tile>u</x-tile></div>
-            <div class="cell" id="tile_v"><x-tile>v</x-tile></div>
-            <div class="cell" id="tile_w"><x-tile>w</x-tile></div>
-            <div class="cell" id="tile_x"><x-tile>x</x-tile></div>
-            <div class="cell" id="tile_y"><x-tile>y</x-tile></div>
-            <div class="cell" id="tile_z"><x-tile>z</x-tile></div>   
+<body>
+    <div class="row">
+        <div id="letters_box" class="container">
+            <x-tile id="reload" class="control">&#x21ba;</x-tile>
         </div>
     </div>
 </body>
 <style>
+[draggable="true"] 
+{
+    /*
+    To prevent user selecting inside the drag source
+    */
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
 
 :root
 {    
@@ -55,16 +39,14 @@ body
 }
 
 x-tile
-{    
-    background-color: red;
+{        
     border: 1px solid black;
     border-radius: 1vh;
     color: white;
     display: inline-block;
     float:left;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 8vh;
-    /* font-weight: bold; */
+    font-size: 8vh;    
     height: var(--size-cell);
     line-height: var(--size-cell);  
     padding-bottom: 2vh;
@@ -72,37 +54,27 @@ x-tile
     padding-right: 1vh;
     text-align: center;
     vertical-align:top;
-    width: var(--size-cell);     
-    /* z-index: 9;     */
+    width: var(--size-cell);         
 }
 
-.control
+x-tile
+{    
+    background-color: red;
+}
+
+.control, x-tile.locked
+{
+    background-color: lightgrey;
+    color: black; 
+}
+
+x-tile.hoverdrag
 {
     background-color: gray;
-    border: 1px solid black;
-    border-radius: 1vh;
-    color: black;
-    display: inline-block;
-    float:left;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 8vh;
-    /* font-weight: bold; */
-    height: var(--size-cell);
-    line-height: var(--size-cell);  
-    padding-bottom: 2vh;
-    padding-left: 1vh;
-    padding-right: 1vh;
-    text-align: center;
-    vertical-align:top;
-    width: var(--size-cell);     
-    
 }
 
-.container
-{
-    /* border: 1px solid black;
-    margin: 1vh; */
-    padding: 1vh;
+.container, .pseudo_container
+{        
     display: inline-block;
 }
 
@@ -113,11 +85,12 @@ x-tile
 }
 
 .cell
-{
+{    
     position: relative;
     display: inline;
     float:left;
 }
+
 
 </style>
 
@@ -139,6 +112,15 @@ HTMLElement.prototype.enumerate = function()
     this.id = this.getCustomTagName() + "_" + count;  
 }
 
+HTMLElement.prototype.isOffPage = function()
+{
+    var rect = this.getBoundingClientRect();
+    var midX = (rect.right + rect.left) / 2;
+    var midY = (rect.top + rect.bottom) / 2;
+    return midX < 0 || midX > window.innerWidth || midY < 0 || midY > window.innerHeight;
+}
+
+
 class XTile extends HTMLElement
 {
     constructor(contents)
@@ -147,54 +129,101 @@ class XTile extends HTMLElement
         if (contents)
         {            
             this.innerText = contents;
-        }
+        }        
         this.pos1 = 0;
         this.pos2 = 0;
         this.pos3 = 0;
         this.pos4 = 0;
         this.style.cursor = "move";
+        this.style.position = "absolute";
+        this.draggable = true;               
         this.addEventListener("mousedown", this.mouseDown);  
+        this.addEventListener("mouseup", this.closeDragElement);
         this.addEventListener("touchstart", this.touchStart);
         this.addEventListener("touchmove", this.touchMove);
-        this.addEventListener("touchend", this.closeDragElement);                        
+        this.addEventListener("touchend", this.closeDragElement); 
+        this.addEventListener("touchenter", this.onMouseOver);                       
         this.addEventListener("mouseleave", this.closeDragElement);
-        this.addEventListener("mouseexit", this.closeDragElement);        
+        this.addEventListener("mouseexit", this.closeDragElement);
+        
+    }
+
+    setOnDragStart(e)
+    {
+        event.dataTransfer.setData('text/html', null); //cannot be empty string
+    }
+
+    isLastOne()
+    {        
+        var count = 0;
+        var others = document.getElementsByTagName("x-tile");
+        others.forEach((tile)=>{
+            if (tile.innerText == this.innerText) count++;
+        });
+        return count == 1;
+    }
+
+    lock()
+    {   
+        this.draggable = false;     
+        this.removeEventListener("mousedown", this.mouseDown);  
+        this.removeEventListener("touchstart", this.touchStart);
+        this.removeEventListener("touchmove", this.touchMove);
+        this.removeEventListener("touchend", this.closeDragElement);                        
+        this.removeEventListener("mouseleave", this.closeDragElement);
+        this.removeEventListener("mouseexit", this.closeDragElement);
+        this.classList.add("locked");
+        this.style = "";           
     }
 
     closeDragElement()
-    {           
-        this.onmouseup = null;
+    {                   
         this.onmousemove = null; 
         this.style.zIndex = 0;
+        if (this.isOffPage())
+        {
+            console.log(this, "is off page");
+            if (!this.isLastOne()) 
+            {
+                this.remove();
+            }                   
+        }
     }
 
     mouseDown(e) 
-    {
-        console.log(this,e, e.type);
+    {        
         e = e || window.event;
+        if (e.which == 3) return;
         e.preventDefault();
+        console.log(e);        
         this.pos3 = e.clientX;
-        this.pos4 = e.clientY;
-        this.onmouseup = this.closeDragElement;
+        this.pos4 = e.clientY;        
         this.onmousemove = this.mouseMove; 
-        this.style.zIndex++;        
+        this.style.zIndex++;                
     }
 
     touchStart(e) 
-    {
-        console.log(this,e, e.type);
+    {        
         e = e || window.event;
-        e.preventDefault();        
+        e.preventDefault();
+        console.log(e);        
         this.pos3 = e.touches[0].clientX;
         this.pos4 = e.touches[0].clientY;
-        this.style.zIndex++;
+        this.style.zIndex++;        
     }
 
     mouseMove(e) 
     {        
         e = e || window.event;
-        e.preventDefault();
-        console.log(this.offsetLeft, this.offsetTop, e.clientX, e.clientY);
+        e.preventDefault(); 
+        if (this.isLastOne())
+        {
+            var rect = this.getBoundingClientRect();
+            var dragMargin = rect.width / 2;
+            var inWidth = e.clientX >= dragMargin && e.clientX < (window.innerWidth - dragMargin);
+            var inHeight = e.clientY >= dragMargin && e.clientY < (window.innerHeight - dragMargin);
+            if (!inWidth || !inHeight) return;
+        }
         this.pos1 = this.pos3 - e.clientX;
         this.pos2 = this.pos4 - e.clientY;
         this.pos3 = e.clientX;
@@ -208,44 +237,105 @@ class XTile extends HTMLElement
     {        
         e = e || window.event;
         e.preventDefault();
-        console.log(this.offsetLeft, this.offsetTop, e.touches[0]);
+        if (this.isLastOne())
+        {
+            var rect = this.getBoundingClientRect();
+            var dragMargin = rect.width / 2;
+            var inWidth = e.touches[0].clientX >= dragMargin && e.touches[0].clientX < (window.innerWidth - dragMargin);
+            var inHeight = e.touches[0].clientY >= dragMargin && e.touches[0].clientY < (window.innerHeight - dragMargin);
+            if (!inWidth || !inHeight) return;        
+        }
         this.pos1 = this.pos3 - e.touches[0].clientX;
         this.pos2 = this.pos4 - e.touches[0].clientY;
         this.pos3 = e.touches[0].clientX;
         this.pos4 = e.touches[0].clientY;        
         this.style.top = (this.offsetTop - this.pos2) + "px";
         this.style.left = (this.offsetLeft - this.pos1) + "px";
-        this.style.zIndex++;
+        this.style.zIndex++;        
+    }
+
+    onMouseOver(e)
+    {
+        console.log(e);
     }
 }
+
 
 customElements.define('x-tile', XTile);
 
 document.addEventListener("DOMContentLoaded", function(event){
-    var letters = document.getElementsByTagName("x-tile");
-    var i = 0;
-    letters.forEach(function(letter)
-    {
-        letter.id = "XTile_" + i++;                        
-        console.log(letter.id, letter.style);        
-        letter.style.top = letter.offsetTop + "px";
-        letter.style.left = letter.offsetLeft + "px";        
-    });
-
-    document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
+    configureControls();
+    addTiles();
 });
 
+function configureControls()
+{
+    document.getElementById("reload").lock();    
+    // var lockedTiles = document.getElementsByClassName("locked");
+    // lockedTiles.forEach(function(tile){
+    //     console.log(tile);
+    //     tile.addEventListener('dragenter', (e) => {
+    //         e.preventDefault();            
+    //         tile.classList.add("hoverdrag");
+    //         console.log(tile, e);
+    //     }, false);
+    //     tile.addEventListener("dragleave", (e)=>{
+    //         console.log(tile, e);
+    //         tile.classList.remove("hoverdrag");        
+    //     }, false);
+    // });
 
-// var alphabet = "abcdefghijklmnopqrstuvwxyz";
-// for (var letter of alphabet)
-// {
-//     var tile = new XTile(letter);
-//     document.body.appendChild(tile);
-//     console.log(tile);
-// }
+    document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
+    document.addEventListener("keyup", (e)=>{ copyLetter(e.key); });
 
-// var tile = new XTile("foo!");
-// document.body.appendChild(tile);
+}
+
+function addTiles()
+{    
+    var letters = "abcdefghijklmnopqrstuvwxyz"; 
+    var i = 0;
+    
+    var offsetX = 0;
+    var offsetY = 0;
+    var container = document.getElementById("letters_box");
+    for (var i=0; i<letters.length; i++)
+    {
+        var letter = letters[i];
+        var tile = new XTile(letter);        
+        tile.id = "XTile_" + i;        
+        container.appendChild(tile);
+        var bounds = tile.getBoundingClientRect();
+        var size = bounds.width;        
+        offsetX = offsetX + size;
+        if (offsetX > window.innerWidth)
+        {
+            offsetY += size;
+            offsetX = 0;
+        }
+        tile.style.top = offsetY + "px";
+        tile.style.left = offsetX + "px";               
+    };
+}
+
+function copyLetter(letter)
+{
+    var letters = document.getElementsByTagName("x-tile");
+    letters.forEach((tile)=>{
+        if (tile.innerText == letter)
+        {
+            var newTile = new XTile(letter);
+            newTile.id = "XTile_" + letters.length;
+            var bounds = tile.getBoundingClientRect();
+            var offset = bounds.width / 2;
+            newTile.style.top = (tile.offsetTop + offset) + "px";
+            newTile.style.left = (tile.offsetLeft + offset) + "px";
+            var container = document.getElementById("letters_box");
+            container.appendChild(newTile);           
+                        
+        }
+    });
+}
+
 
 </script>
 
