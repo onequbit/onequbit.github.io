@@ -293,7 +293,7 @@ function addTiles()
         var bounds = tile.getBoundingClientRect();
         var size = bounds.width;        
         offsetX = offsetX + size;
-        if (offsetX > window.innerWidth)
+        if (offsetX > (window.innerWidth - size))
         {
             offsetY += size;
             offsetX = 0;
