@@ -294,8 +294,7 @@ function addTiles()
 {    
     var letters = "abcdefghijklmnopqrstuvwxyz"; 
     var i = 0;
-    
-    var offsetX = 0;
+        var offsetX = 0;
     var offsetY = 0;
     var container = document.getElementById("letters_box");
     for (var i=0; i<letters.length; i++)
@@ -330,14 +329,11 @@ function copyLetter(letter)
             newTile.style.top = (tile.offsetTop + offset) + "px";
             newTile.style.left = (tile.offsetLeft + offset) + "px";
             var container = document.getElementById("letters_box");
-            container.appendChild(newTile);           
-                        
+            container.appendChild(newTile);      
         }
     });
 }
 
-
 </script>
-
 
 </html> 
