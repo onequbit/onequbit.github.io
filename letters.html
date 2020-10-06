@@ -305,10 +305,12 @@ function addTiles()
 
 function copyLetter(letter)
 {
-    var letters = document.getElementsByTagName("x-tile");
-    letters.forEach((tile)=>{
+    var letters = document.getElementsByTagName("x-tile");    
+    for (var i=0; i<letters.length; i++)
+    {
+        var tile = letters[i];
         if (tile.innerText == letter)
-        {
+        {            
             var newTile = new XTile(letter);
             newTile.id = "XTile_" + letters.length;
             var bounds = tile.getBoundingClientRect();
@@ -317,9 +319,9 @@ function copyLetter(letter)
             newTile.style.left = (tile.offsetLeft + offset) + "px";
             var container = document.getElementById("letters_box");
             container.appendChild(newTile);
-            return;  
-        }
-    });
+            break;
+        }        
+    }
 }
 
 </script>
