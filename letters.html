@@ -271,19 +271,6 @@ document.addEventListener("DOMContentLoaded", function(event){
 function configureControls()
 {
     document.getElementById("reload").lock();    
-    // var lockedTiles = document.getElementsByClassName("locked");
-    // lockedTiles.forEach(function(tile){
-    //     console.log(tile);
-    //     tile.addEventListener('dragenter', (e) => {
-    //         e.preventDefault();            
-    //         tile.classList.add("hoverdrag");
-    //         console.log(tile, e);
-    //     }, false);
-    //     tile.addEventListener("dragleave", (e)=>{
-    //         console.log(tile, e);
-    //         tile.classList.remove("hoverdrag");        
-    //     }, false);
-    // });
 
     document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
     document.addEventListener("keyup", (e)=>{ copyLetter(e.key); });
@@ -329,7 +316,8 @@ function copyLetter(letter)
             newTile.style.top = (tile.offsetTop + offset) + "px";
             newTile.style.left = (tile.offsetLeft + offset) + "px";
             var container = document.getElementById("letters_box");
-            container.appendChild(newTile);      
+            container.appendChild(newTile);
+            return;  
         }
     });
 }
