@@ -178,8 +178,7 @@ class XTile extends HTMLElement
 
     closeDragElement()
     {                   
-        this.onmousemove = null; 
-        this.style.zIndex = 0;
+        this.onmousemove = null;         
         if (this.isOffPage())
         {
             console.log(this, "is off page");
@@ -188,6 +187,7 @@ class XTile extends HTMLElement
                 this.remove();
             }                   
         }
+        this.pushOtherTilesBack();        
     }
 
     mouseDown(e) 
@@ -199,7 +199,7 @@ class XTile extends HTMLElement
         this.pos3 = e.clientX;
         this.pos4 = e.clientY;        
         this.onmousemove = this.mouseMove; 
-        this.style.zIndex++;                
+        this.pushOtherTilesBack();
     }
 
     touchStart(e) 
@@ -208,8 +208,8 @@ class XTile extends HTMLElement
         e.preventDefault();
         console.log(e);        
         this.pos3 = e.touches[0].clientX;
-        this.pos4 = e.touches[0].clientY;
-        this.style.zIndex++;        
+        this.pos4 = e.touches[0].clientY;        
+        this.pushOtherTilesBack();
     }
 
     mouseMove(e) 
@@ -230,7 +230,18 @@ class XTile extends HTMLElement
         this.pos4 = e.clientY;        
         this.style.top = (this.offsetTop - this.pos2) + "px";
         this.style.left = (this.offsetLeft - this.pos1) + "px";
-        this.style.zIndex++;
+        this.pushOtherTilesBack();
+    }
+
+    pushOtherTilesBack()
+    {        
+        var letters = document.getElementsByTagName("x-tile");    
+        for (var i=letters.length - 1; i>=0; i--)
+        {
+            var tile = letters[i];
+            if (tile.id != this.id) tile.style.zIndex=i;
+        }
+        this.style.zIndex = letters.length;
     }
 
     touchMove(e) 
@@ -251,7 +262,7 @@ class XTile extends HTMLElement
         this.pos4 = e.touches[0].clientY;        
         this.style.top = (this.offsetTop - this.pos2) + "px";
         this.style.left = (this.offsetLeft - this.pos1) + "px";
-        this.style.zIndex++;        
+        this.pushOtherTilesBack();
     }
 
     onMouseOver(e)
@@ -299,14 +310,15 @@ function addTiles()
             offsetX = 0;
         }
         tile.style.top = offsetY + "px";
-        tile.style.left = offsetX + "px";               
+        tile.style.left = offsetX + "px";
+        tile.style.zIndex = 0;              
     };
 }
 
 function copyLetter(letter)
 {
     var letters = document.getElementsByTagName("x-tile");    
-    for (var i=0; i<letters.length; i++)
+    for (var i=letters.length - 1; i>=0; i--)
     {
         var tile = letters[i];
         if (tile.innerText == letter)
