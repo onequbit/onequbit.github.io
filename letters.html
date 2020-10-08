@@ -6,8 +6,13 @@
 
 <body>
     <div class="row">
-        <div id="letters_box" class="container">
-            <x-tile id="reload" class="control">&#x21ba;</x-tile>
+        <div id="controls_box" class="container">
+            <x-tile id="trash" class="control">&#x1f5d1;</x-tile>
+            <x-tile id="reload" class="control">&#x21ba;</x-tile>            
+        </div>
+    </div>
+    <div class="row">
+        <div id="letters_box" class="container">            
         </div>
     </div>
 </body>
@@ -43,8 +48,7 @@ x-tile
     border: 1px solid black;
     border-radius: 1vh;
     color: white;
-    display: inline-block;
-    float:left;
+    display: inline-block;    
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 8vh;    
     height: var(--size-cell);
@@ -87,8 +91,12 @@ x-tile.hoverdrag
 .cell
 {    
     position: relative;
-    display: inline;
-    float:left;
+    display: inline;    
+}
+
+#letters_box
+{
+    border: 1px solid black;
 }
 
 
@@ -145,7 +153,7 @@ class XTile extends HTMLElement
         this.addEventListener("touchenter", this.onMouseOver);                       
         this.addEventListener("mouseleave", this.closeDragElement);
         this.addEventListener("mouseexit", this.closeDragElement);
-        
+        this.distanceTo = [];        
     }
 
     setOnDragStart(e)
@@ -187,7 +195,8 @@ class XTile extends HTMLElement
                 this.remove();
             }                   
         }
-        this.pushOtherTilesBack();        
+        this.pushOtherTilesBack();
+        this.updateRadar();       
     }
 
     mouseDown(e) 
@@ -205,8 +214,7 @@ class XTile extends HTMLElement
     touchStart(e) 
     {        
         e = e || window.event;
-        e.preventDefault();
-        console.log(e);        
+        e.preventDefault();        
         this.pos3 = e.touches[0].clientX;
         this.pos4 = e.touches[0].clientY;        
         this.pushOtherTilesBack();
@@ -215,7 +223,7 @@ class XTile extends HTMLElement
     mouseMove(e) 
     {        
         e = e || window.event;
-        e.preventDefault(); 
+        e.preventDefault();         
         if (this.isLastOne())
         {
             var rect = this.getBoundingClientRect();
@@ -248,6 +256,7 @@ class XTile extends HTMLElement
     {        
         e = e || window.event;
         e.preventDefault();
+        // console.log(e);
         if (this.isLastOne())
         {
             var rect = this.getBoundingClientRect();
@@ -269,6 +278,26 @@ class XTile extends HTMLElement
     {
         console.log(e);
     }
+
+    updateRadar()
+    {
+        var width = this.getBoundingClientRect().width;
+        var middle = width/2;
+        console.log("middle:" + middle + ", width:" + width);  
+        var x1 = this.offsetLeft + middle;
+        var y1 = this.offsetTop + middle;        
+        var letterTiles = document.getElementsByTagName("x-tile");
+        letterTiles.forEach( (tile) => {
+            if (tile.id != this.id)
+            {
+                var x2 = tile.offsetLeft + middle;
+                var y2 = tile.offsetTop + middle;
+                var angle = direction(x1,y1,x2,y2);
+                var dist = distance(x1,y1,x2,y2);
+                console.log(this.id, tile.id, dist, angle);
+            }
+        });  
+    }
 }
 
 
@@ -281,8 +310,7 @@ document.addEventListener("DOMContentLoaded", function(event){
 
 function configureControls()
 {
-    document.getElementById("reload").lock();    
-
+    document.getElementsByClassName("control").forEach((element)=>{ element.lock(); });
     document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
     document.addEventListener("keyup", (e)=>{
         var letter = ("" + e.key).toLowerCase();
@@ -292,11 +320,13 @@ function configureControls()
 
 }
 
+letterTiles = [];
+
 function addTiles()
 {    
-    var letters = "abcdefghijklmnopqrstuvwxyz"; 
+    letters = "abcdefghijklmnopqrstuvwxyz"; 
     var i = 0;
-        var offsetX = 0;
+    var offsetX = 0;
     var offsetY = 0;
     var container = document.getElementById("letters_box");
     for (var i=0; i<letters.length; i++)
@@ -305,6 +335,9 @@ function addTiles()
         var tile = new XTile(letter);        
         tile.id = "XTile_" + i;        
         container.appendChild(tile);
+        tile.style.top = offsetY + "px";
+        tile.style.left = offsetX + "px";
+        tile.style.zIndex = 0;
         var bounds = tile.getBoundingClientRect();
         var size = bounds.width;        
         offsetX = offsetX + size;
@@ -313,9 +346,7 @@ function addTiles()
             offsetY += size;
             offsetX = 0;
         }
-        tile.style.top = offsetY + "px";
-        tile.style.left = offsetX + "px";
-        tile.style.zIndex = 0;              
+        letterTiles[tile.id] = tile;
     };
 }
 
@@ -335,11 +366,25 @@ function copyLetter(letter)
             newTile.style.left = (tile.offsetLeft + offset) + "px";
             var container = document.getElementById("letters_box");
             container.appendChild(newTile);
+            if (newTile.isOffPage) {
+                newTile.remove();
+            }
             break;
         }        
     }
 }
 
+function distance(x1,y1,x2,y2)
+{
+    return Math.sqrt( Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2) );
+}
+
+function direction(x1,y1,x2,y2)
+{
+    return Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
+}
+
 </script>
 
 </html> 
+
