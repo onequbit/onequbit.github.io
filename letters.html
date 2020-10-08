@@ -284,7 +284,11 @@ function configureControls()
     document.getElementById("reload").lock();    
 
     document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
-    document.addEventListener("keyup", (e)=>{ copyLetter(e.key); });
+    document.addEventListener("keyup", (e)=>{
+        var letter = ("" + e.key).toLowerCase();
+        console.log(letter);
+        copyLetter(letter); 
+    });
 
 }
 
