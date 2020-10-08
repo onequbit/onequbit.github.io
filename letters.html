@@ -72,6 +72,7 @@ x-tile
     color: black; 
 }
 
+
 x-tile.hoverdrag
 {
     background-color: gray;
@@ -97,6 +98,11 @@ x-tile.hoverdrag
 #letters_box
 {
     border: 1px solid black;
+}
+
+#trash
+{
+    display: none;
 }
 
 
@@ -362,13 +368,12 @@ function copyLetter(letter)
             newTile.id = "XTile_" + letters.length;
             var bounds = tile.getBoundingClientRect();
             var offset = bounds.width / 2;
+            if ((tile.offsetTop + bounds.height) > (window.innerHeight - offset) ||            
+                (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
             newTile.style.top = (tile.offsetTop + offset) + "px";
             newTile.style.left = (tile.offsetLeft + offset) + "px";
             var container = document.getElementById("letters_box");
             container.appendChild(newTile);
-            if (newTile.isOffPage) {
-                newTile.remove();
-            }
             break;
         }        
     }
