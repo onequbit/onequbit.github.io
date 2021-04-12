@@ -109,8 +109,11 @@ x-tile.hoverdrag
 </style>
 
 <script>
-
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
+try
+{
+    HTMLCollection.prototype.forEach = Array.prototype.forEach;
+}
+catch(e) {}
 
 HTMLElement.prototype.getCustomTagName = function(){
     console.log(this.localName);        
@@ -286,10 +289,10 @@ class XTile extends HTMLElement
     }
 
     updateRadar()
-    {
+    {        
         var width = this.getBoundingClientRect().width;
         var middle = width/2;
-        console.log("middle:" + middle + ", width:" + width);  
+        console.log(this.innerText + ":" + this.id + " middle:" + middle + ", width:" + width);  
         var x1 = this.offsetLeft + middle;
         var y1 = this.offsetTop + middle;        
         var letterTiles = document.getElementsByTagName("x-tile");
@@ -386,7 +389,38 @@ function distance(x1,y1,x2,y2)
 
 function direction(x1,y1,x2,y2)
 {
-    return Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
+    var angle = Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;    
+    if (angleIsNorth(angle)) return "north";
+    if (angleIsSouth(angle)) return "south";
+    if (angleIsEast(angle)) return "east";
+    if (angleIsWest(angle)) return "west";
+    return angle;
+}
+
+function angleIsNorth(angle)
+{
+    return inBounds(angle, -45, -135);
+}
+
+function angleIsSouth(angle)
+{
+    return inBounds(angle, 135, 45);
+}
+
+function angleIsEast(angle)
+{
+    return inBounds(angle, -45, 45) || inBounds(angle, 225, 135);
+}
+
+function angleIsWest(angle)
+{
+    return inBounds(angle, -135, -225);
+}
+
+
+function inBounds(value, upper, lower)
+{
+    return (upper > value) && (value > lower);
 }
 
 </script>

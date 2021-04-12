@@ -1,0 +1,13 @@
+#Software: Microsoft Internet Information Services 10.0
+#Version: 1.0
+#Date: 2020-04-08 18:58:48
+#Fields: date time s-sitename s-computername s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs-version cs(User-Agent) cs(Cookie) cs(Referer) cs-host sc-status sc-substatus sc-win32-status sc-bytes cs-bytes time-taken
+2020-04-08 18:58:45 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 IEU-ITS-XPS\araquino ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 500 0 1413 5967 729 0
+2020-04-08 18:58:45 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 - ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 401 2 5 6235 538 4
+2020-04-08 19:02:25 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 - ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 401 2 5 6235 564 3
+2020-04-08 19:02:25 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 IEU-ITS-XPS\araquino ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 500 0 1413 5967 755 5
+2020-04-08 19:03:30 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 IEU-ITS-XPS\araquino ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 500 0 1413 5967 564 3
+2020-04-08 19:03:38 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 - ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 401 2 5 6235 564 2
+2020-04-08 19:03:38 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 IEU-ITS-XPS\araquino ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 500 0 1413 5967 755 0
+2020-04-08 19:09:08 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 IEU-ITS-XPS\araquino ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 500 0 1413 5967 755 5
+2020-04-08 19:09:08 W3SVC2 IEU-ITS-XPS ::1 GET /py/flask_app.py - 80 - ::1 HTTP/1.1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/80.0.3987.163+Safari/537.36 - - localhost 401 2 5 6235 564 788
