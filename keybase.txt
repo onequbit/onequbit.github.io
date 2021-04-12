@@ -1,0 +1,56 @@
+==================================================================
+https://keybase.io/onequbit
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://onequbit.com
+  * I am onequbit (https://keybase.io/onequbit) on keybase.
+  * I have a public key ASDZ2ICuH6DZmAm6gW87zmPc1xh8Dd3jnk6rZN5pNhhqcQo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "0101cd6aa21246887b1ee80e11ccd86da2a275bf0ab334d6529979befac9b3bb3f3b0a",
+      "host": "keybase.io",
+      "kid": "0120d9d880ae1fa0d99809ba816f3bce63dcd7187c0ddde39e4eab64de6936186a710a",
+      "uid": "4bc57dc7d83c1b1a95c00ecd1e0da719",
+      "username": "onequbit"
+    },
+    "merkle_root": {
+      "ctime": 1618250825,
+      "hash": "91ebc8ceb6d69adc141d222cbc4ede529caff884636c7f316abc1c372456be439e8b5a0ffbeab25b580d152f82055c857e6783eb6e6e23eea678f702c6b000bb",
+      "hash_meta": "0975bfbebf0e2eb4bb2221d32c24d1f03d780916440ddc15687ab3f920187711",
+      "seqno": 19611796
+    },
+    "service": {
+      "entropy": "YsrL1LnUyOAUuQQIw9/mJXg+",
+      "hostname": "onequbit.com",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "5.6.1"
+  },
+  "ctime": 1618250854,
+  "expire_in": 504576000,
+  "prev": "b06c8acd0719cfe38037c1eb220fe95ec7f4353dc2156e4aff1e92a1a3931f32",
+  "seqno": 20,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEg2diArh+g2ZgJuoFvO85j3NcYfA3d455Oq2TeaTYYanEKp3BheWxvYWTESpcCFMQgsGyKzQcZz+OAN8HrIg/pXsf0NT3CFW5K/x6SoaOTHzLEIDDidrVL3Mvr9x2NWGO0sR7bU+acWtCZ7Nqo76sviow2AgHCo3NpZ8RA9tJZu1uIydohu8B3e+oHqeADJzj//CUmgGg2lBSTZ3D2ZO7ntQS6tLE0GvdxEE8yIZNhqyLNc9IlC/w6aj9DC6hzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEICLDzxBWLz+ogFrAuJ9P7c1NpBmb6Uc2f0KkaSsBPbTco3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/onequbit
+
+==================================================================
