@@ -16,6 +16,16 @@
          }
    </style>
    <body>
-      <div class='font-test'>HELLO WORLD</div>      
+      <div class='flipcard'>HELLO WORLD</div>      
    </body>
+
+   <script>
+      var flipcard_elements = document.getElementsByClassName('flipcard');
+      for (var index=0; i<flipcard_elements.length; i++)
+      {
+         var element = flipcard_elements[index];
+         var contents = element.innerText;
+         console.log(contents);
+      }
+   </script>
 </html>
