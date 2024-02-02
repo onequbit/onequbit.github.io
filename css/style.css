@@ -1,0 +1,20 @@
+body {
+    display: grid
+}
+
+div::before {
+    content: attr(id)
+}
+
+.text {
+    text-decoration: none;
+}
+
+.text:hover {
+    text-decoration: underline;
+    content: s
+}
+
+#page-header::before {
+    content: "* Lone Wolf Action Chart*"
+}
