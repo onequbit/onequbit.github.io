@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load JSON Data</title>
+    <style>
+        img, textarea {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const textbox = document.getElementById("dataTextbox");
+        const jsonFile = "kalos.json"; // Replace with your JSON file name
+
+        function main() {
+
+            fetch(jsonFile)
+                .then(response => {
+                    if (response.ok) return response.json();
+                })
+                .then(data => {
+                    use_data(data);
+                })
+                .catch(error => {
+                    textbox.value = `Error loading data: ${error.message}`;
+                });
+        }
+
+        function get_random_pokemon(data) {
+            const randomIndex = Math.floor(Math.random() * data.length);
+            return data[randomIndex];
+        }
+
+        function use_data(data) {
+            // console.log(data);
+            const pokemon = get_random_pokemon(data);
+            
+            show_info(pokemon);
+
+            // data.forEach(element => {
+            //     console.log(element.name, element.number);
+            //     add_image(element.ThumbnailImage);
+            // });
+            
+        }
+
+        function add_image(imageUrl) {
+            // Create a new image element
+            const img = document.createElement("img");
+            
+            // Set the image source to the provided URL
+            img.src = imageUrl;
+
+            // Optionally add some styles or attributes
+            img.alt = "Dynamic Image";
+            img.style.maxWidth = "100%";
+            img.style.height = "auto";
+
+            // Append the image to the body or another container
+            document.body.appendChild(img);
+        }
+
+        function show_info(pokemon) {
+            // Create a new image element
+            // <textarea id="dataTextbox" cols="50" rows="10" readonly></textarea>
+            const textarea = document.createElement("textarea");
+            info_text = JSON.stringify(pokemon, null, 2);
+            textarea.cols = 70
+            textarea.rows = info_text.split(/\r?\n/).length;
+            textarea.readOnly = true;
+            textarea.value = info_text
+
+            // Append the image to the body or another container
+            add_image(pokemon.ThumbnailImage);
+            document.body.appendChild(textarea);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            main()
+        });
+
+        // https://pokemondb.net/pokedex/national
+        // https://eu01.records.in.treasuredata.com/src_pcom_webtracking/pageviews?modified=1734754371348
+
+    </script>
+</body>
+</html>
