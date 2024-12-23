@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Rotating Element</title>
+  <style>
+    #rotatable {
+      width: 200px;
+      height: 200px;
+      background-color: #4caf50;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s ease;
+      transform-origin: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="rotatable">Click Me</div>
+
+  <script>
+    let currentRotation = 0;
+
+    // rotatingElement.addEventListener('click', () => {
+    //   currentRotation += 45; // Rotate by 45 degrees on each click
+    //   rotatingElement.style.transform = `rotate(${currentRotation}deg)`;
+    // });
+
+    const rotatable = document.getElementById('rotatable');
+
+    let initialAngle = 0;
+    let lastAngle = 0;
+
+    rotatable.addEventListener('touchmove', (event) => {
+        if (event.touches.length === 2) {
+            console.log(event);
+            const [touch1, touch2] = event.touches;
+            
+            // Calculate the angle between two fingers
+            const angle = Math.atan2(
+            touch2.clientY - touch1.clientY,
+            touch2.clientX - touch1.clientX
+            );
+
+            if (!initialAngle) {
+            initialAngle = angle;
+            }
+
+            // Calculate rotation difference and apply it
+            const rotation = ((angle - initialAngle) * 180) / Math.PI;
+            rotatable.style.transform = `rotate(${lastAngle + rotation}deg)`;
+        }   
+    });
+
+    rotatable.addEventListener('touchend', (event) => {
+        if (event.touches.length === 0) {
+            lastAngle += ((Math.atan2(
+                event.changedTouches[1]?.clientY - event.changedTouches[0]?.clientY,
+                event.changedTouches[1]?.clientX - event.changedTouches[0]?.clientX
+                 - initialAngle) * 180) / Math.PI) || 0;
+            initialAngle = 0; // Reset initial angle
+        }
+    });
+
+
+  </script>
+</body>
+</html>
