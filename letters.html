@@ -105,10 +105,7 @@ x-tile.hoverdrag
     display: none;
 }
 
-.rainbowed {
-    width: 80vw;
-    height: 200px;
-    border-radius: 5px;
+.rainbow {
     background: linear-gradient(
         90deg,
         rgba(255, 0, 0, 1) 0%,
@@ -134,7 +131,7 @@ x-tile.hoverdrag
     HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
     HTMLElement.prototype.getCustomTagName = function(){
-        console.log(this.localName);        
+        // console.log(this.localName);        
         var tagStr = this.localName.split("-")[1];
         return "X" + tagStr[0].toLocaleUpperCase() + tagStr.slice(1);        
     }
@@ -155,7 +152,6 @@ x-tile.hoverdrag
         return midX < 0 || midX > window.innerWidth || midY < 0 || midY > window.innerHeight;
     }
 
-
     class XTile extends HTMLElement
     {
         constructor(contents)
@@ -164,7 +160,7 @@ x-tile.hoverdrag
             if (contents)
             {            
                 this.innerText = contents;
-            }        
+            }
             this.pos1 = 0;
             this.pos2 = 0;
             this.pos3 = 0;
@@ -216,7 +212,7 @@ x-tile.hoverdrag
             this.onmousemove = null;         
             if (this.isOffPage())
             {
-                console.log(this, "is off page");
+                // console.log(this, "is off page");
                 if (!this.isLastOne()) 
                 {
                     this.remove();
@@ -231,7 +227,7 @@ x-tile.hoverdrag
             e = e || window.event;
             if (e.which == 3) return;
             e.preventDefault();
-            console.log(e);        
+            // console.log(e);        
             this.pos3 = e.clientX;
             this.pos4 = e.clientY;        
             this.onmousemove = this.mouseMove; 
@@ -310,7 +306,7 @@ x-tile.hoverdrag
         {
             var width = this.getBoundingClientRect().width;
             var middle = width/2;
-            console.log("middle:" + middle + ", width:" + width);  
+            // console.log("middle:" + middle + ", width:" + width);  
             var x1 = this.offsetLeft + middle;
             var y1 = this.offsetTop + middle;        
             var letterTiles = document.getElementsByTagName("x-tile");
@@ -321,18 +317,20 @@ x-tile.hoverdrag
                     var y2 = tile.offsetTop + middle;
                     var angle = direction(x1,y1,x2,y2);
                     var dist = distance(x1,y1,x2,y2);
-                    console.log(this.id, tile.id, dist, angle);
+                    // console.log(this.id, tile.id, dist, angle);
                 }
             });  
         }
     }
 
-
     customElements.define('x-tile', XTile);
 
-    function setColor() {
+    function getColorParameter() {
         let params = new URLSearchParams(document.location.search);
-        return params.get("color") || "red"
+        let color = params.get("color")
+        if (!color) color = "red";
+        console.log("getColorParameter:", color);
+        return color;
     }
     
     document.addEventListener("DOMContentLoaded", function(event){
@@ -343,7 +341,7 @@ x-tile.hoverdrag
     function configureControls()
     {
         document.getElementsByClassName("control").forEach((element)=>{ element.lock(); });
-        document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
+        document.getElementById("reload").addEventListener("click", function(){ location.reload(); });
         document.addEventListener("keyup", (e)=>{
             var letter = ("" + e.key).toLowerCase();
             console.log(letter);
@@ -356,21 +354,20 @@ x-tile.hoverdrag
 
     function addTiles(color)
     {    
-        letters = "abcdefghijklmnopqrstuvwxyz"; 
+        var letters = "abcdefghijklmnopqrstuvwxyz"; 
+        // letters = "abcdefghiabcdefghirstuvwxyz"; 
         var i = 0;
         var offsetX = 0;
         var offsetY = 0;
-        var container = document.getElementById("letters_box");
         for (var i=0; i<letters.length; i++)
         {
             var letter = letters[i];
-            var tile = new XTile(letter);        
-            tile.id = "XTile_" + i;
-            container.appendChild(tile);
+            var tile = newLetterTile(letter, offsetX, offsetY, "XTile_" + letterTiles.length);
+            console.log("addTiles:", typeof tile, tile);
+            document.getElementById("letters_box").appendChild(tile);
             tile.style.top = offsetY + "px";
             tile.style.left = offsetX + "px";
             tile.style.zIndex = 0;
-            tile.style.backgroundColor = setColor();
             var bounds = tile.getBoundingClientRect();
             var size = bounds.width;        
             offsetX = offsetX + size;
@@ -379,32 +376,54 @@ x-tile.hoverdrag
                 offsetY += size;
                 offsetX = 0;
             }
-            letterTiles[tile.id] = tile;
+            letterTiles[i] = tile;
         };
     }
 
     function copyLetter(letter)
     {
-        var letters = document.getElementsByTagName("x-tile");    
+        var letters = document.getElementsByTagName("x-tile");
+        var foundLetter = letters.Array
+        var letters_box = document.getElementById("letters_box");
         for (var i=letters.length - 1; i>=0; i--)
         {
             var tile = letters[i];
             if (tile.innerText == letter)
-            {            
-                var newTile = new XTile(letter);
-                newTile.id = "XTile_" + letters.length;
+            {
+                tile.pushOtherTilesBack();
                 var bounds = tile.getBoundingClientRect();
-                var offset = bounds.width / 2;
-                if ((tile.offsetTop + bounds.height) > (window.innerHeight - offset) ||            
-                    (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
-                newTile.style.top = (tile.offsetTop + offset) + "px";
-                newTile.style.left = (tile.offsetLeft + offset) + "px";
-                newTile.style.backgroundColor = setColor();
-                var container = document.getElementById("letters_box");
-                container.appendChild(newTile);
+                var offset = bounds.width / 5;
+                var top = tile.offsetTop + offset;
+                var left = tile.offsetLeft + offset;
+                var newTile = newLetterTile(letter, top, left, "XTile_" + letters.length);
+                letters_box.appendChild(newTile);
+                newTile.pushOtherTilesBack();
                 break;
             }        
         }
+    }
+
+    function newLetterTile(letter, top, left, id) 
+    {
+        var newTile = new XTile(letter);
+        // console.log("newLetterTile: XTile:", typeof newTile, newTile, top, left, id);
+        var bounds = newTile.getBoundingClientRect();
+        var offset = bounds.width / 2;
+        console.log("newLetterTile:", letter, top, left, bounds);
+        // if ((top + bounds.height) > (window.innerHeight - offset) ||
+        //     (left + bounds.width) > (window.innerWidth - offset)) return;
+        newTile.style.top = (top + offset) + "px";
+        newTile.style.left = (left + offset) + "px";
+        console.log("newLetterTile:", newTile.style);
+        colorParam = getColorParameter();
+        if (colorParam == "rainbow") {
+            // newTile.style.backgroundColor == "unset";
+            newTile.classList.add("rainbow");
+        } else {
+            newTile.style.backgroundColor = colorParam;
+        }
+        // console.log("newLetterTile: returning:", typeof newTile, newTile);
+        return newTile;
     }
 
     function distance(x1,y1,x2,y2)
