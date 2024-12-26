@@ -110,284 +110,291 @@ x-tile.hoverdrag
 
 <script>
 
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
+    HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
-HTMLElement.prototype.getCustomTagName = function(){
-    console.log(this.localName);        
-    var tagStr = this.localName.split("-")[1];
-    return "X" + tagStr[0].toLocaleUpperCase() + tagStr.slice(1);        
-}
+    HTMLElement.prototype.getCustomTagName = function(){
+        console.log(this.localName);        
+        var tagStr = this.localName.split("-")[1];
+        return "X" + tagStr[0].toLocaleUpperCase() + tagStr.slice(1);        
+    }
 
-HTMLElement.prototype.enumerate = function()
-{
-    var othersCollection = document.getElementsByTagName(this.localName);
-    var count = othersCollection.length;
-    this.dataset["id"] = count;
-    this.id = this.getCustomTagName() + "_" + count;  
-}
-
-HTMLElement.prototype.isOffPage = function()
-{
-    var rect = this.getBoundingClientRect();
-    var midX = (rect.right + rect.left) / 2;
-    var midY = (rect.top + rect.bottom) / 2;
-    return midX < 0 || midX > window.innerWidth || midY < 0 || midY > window.innerHeight;
-}
-
-
-class XTile extends HTMLElement
-{
-    constructor(contents)
+    HTMLElement.prototype.enumerate = function()
     {
-        super();
-        if (contents)
-        {            
-            this.innerText = contents;
-        }        
-        this.pos1 = 0;
-        this.pos2 = 0;
-        this.pos3 = 0;
-        this.pos4 = 0;
-        this.style.cursor = "move";
-        this.style.position = "absolute";
-        this.draggable = true;               
-        this.addEventListener("mousedown", this.mouseDown);  
-        this.addEventListener("mouseup", this.closeDragElement);
-        this.addEventListener("touchstart", this.touchStart);
-        this.addEventListener("touchmove", this.touchMove);
-        this.addEventListener("touchend", this.closeDragElement); 
-        this.addEventListener("touchenter", this.onMouseOver);                       
-        this.addEventListener("mouseleave", this.closeDragElement);
-        this.addEventListener("mouseexit", this.closeDragElement);
-        this.distanceTo = [];        
+        var othersCollection = document.getElementsByTagName(this.localName);
+        var count = othersCollection.length;
+        this.dataset["id"] = count;
+        this.id = this.getCustomTagName() + "_" + count;  
     }
 
-    setOnDragStart(e)
+    HTMLElement.prototype.isOffPage = function()
     {
-        event.dataTransfer.setData('text/html', null); //cannot be empty string
+        var rect = this.getBoundingClientRect();
+        var midX = (rect.right + rect.left) / 2;
+        var midY = (rect.top + rect.bottom) / 2;
+        return midX < 0 || midX > window.innerWidth || midY < 0 || midY > window.innerHeight;
     }
 
-    isLastOne()
-    {        
-        var count = 0;
-        var others = document.getElementsByTagName("x-tile");
-        others.forEach((tile)=>{
-            if (tile.innerText == this.innerText) count++;
-        });
-        return count == 1;
-    }
 
-    lock()
-    {   
-        this.draggable = false;     
-        this.removeEventListener("mousedown", this.mouseDown);  
-        this.removeEventListener("touchstart", this.touchStart);
-        this.removeEventListener("touchmove", this.touchMove);
-        this.removeEventListener("touchend", this.closeDragElement);                        
-        this.removeEventListener("mouseleave", this.closeDragElement);
-        this.removeEventListener("mouseexit", this.closeDragElement);
-        this.classList.add("locked");
-        this.style = "";           
-    }
-
-    closeDragElement()
-    {                   
-        this.onmousemove = null;         
-        if (this.isOffPage())
+    class XTile extends HTMLElement
+    {
+        constructor(contents)
         {
-            console.log(this, "is off page");
-            if (!this.isLastOne()) 
+            super();
+            if (contents)
+            {            
+                this.innerText = contents;
+            }        
+            this.pos1 = 0;
+            this.pos2 = 0;
+            this.pos3 = 0;
+            this.pos4 = 0;
+            this.style.cursor = "move";
+            this.style.position = "absolute";
+            this.draggable = true;               
+            this.addEventListener("mousedown", this.mouseDown);  
+            this.addEventListener("mouseup", this.closeDragElement);
+            this.addEventListener("touchstart", this.touchStart);
+            this.addEventListener("touchmove", this.touchMove);
+            this.addEventListener("touchend", this.closeDragElement); 
+            this.addEventListener("touchenter", this.onMouseOver);                       
+            this.addEventListener("mouseleave", this.closeDragElement);
+            this.addEventListener("mouseexit", this.closeDragElement);
+            this.distanceTo = [];        
+        }
+
+        setOnDragStart(e)
+        {
+            event.dataTransfer.setData('text/html', null); //cannot be empty string
+        }
+
+        isLastOne()
+        {        
+            var count = 0;
+            var others = document.getElementsByTagName("x-tile");
+            others.forEach((tile)=>{
+                if (tile.innerText == this.innerText) count++;
+            });
+            return count == 1;
+        }
+
+        lock()
+        {   
+            this.draggable = false;     
+            this.removeEventListener("mousedown", this.mouseDown);  
+            this.removeEventListener("touchstart", this.touchStart);
+            this.removeEventListener("touchmove", this.touchMove);
+            this.removeEventListener("touchend", this.closeDragElement);                        
+            this.removeEventListener("mouseleave", this.closeDragElement);
+            this.removeEventListener("mouseexit", this.closeDragElement);
+            this.classList.add("locked");
+            this.style = "";           
+        }
+
+        closeDragElement()
+        {                   
+            this.onmousemove = null;         
+            if (this.isOffPage())
             {
-                this.remove();
-            }                   
+                console.log(this, "is off page");
+                if (!this.isLastOne()) 
+                {
+                    this.remove();
+                }                   
+            }
+            this.pushOtherTilesBack();
+            this.updateRadar();       
         }
-        this.pushOtherTilesBack();
-        this.updateRadar();       
-    }
 
-    mouseDown(e) 
-    {        
-        e = e || window.event;
-        if (e.which == 3) return;
-        e.preventDefault();
-        console.log(e);        
-        this.pos3 = e.clientX;
-        this.pos4 = e.clientY;        
-        this.onmousemove = this.mouseMove; 
-        this.pushOtherTilesBack();
-    }
+        mouseDown(e) 
+        {        
+            e = e || window.event;
+            if (e.which == 3) return;
+            e.preventDefault();
+            console.log(e);        
+            this.pos3 = e.clientX;
+            this.pos4 = e.clientY;        
+            this.onmousemove = this.mouseMove; 
+            this.pushOtherTilesBack();
+        }
 
-    touchStart(e) 
-    {        
-        e = e || window.event;
-        e.preventDefault();        
-        this.pos3 = e.touches[0].clientX;
-        this.pos4 = e.touches[0].clientY;        
-        this.pushOtherTilesBack();
-    }
+        touchStart(e) 
+        {        
+            e = e || window.event;
+            e.preventDefault();        
+            this.pos3 = e.touches[0].clientX;
+            this.pos4 = e.touches[0].clientY;        
+            this.pushOtherTilesBack();
+        }
 
-    mouseMove(e) 
-    {        
-        e = e || window.event;
-        e.preventDefault();         
-        if (this.isLastOne())
+        mouseMove(e) 
+        {        
+            e = e || window.event;
+            e.preventDefault();         
+            if (this.isLastOne())
+            {
+                var rect = this.getBoundingClientRect();
+                var dragMargin = rect.width / 2;
+                var inWidth = e.clientX >= dragMargin && e.clientX < (window.innerWidth - dragMargin);
+                var inHeight = e.clientY >= dragMargin && e.clientY < (window.innerHeight - dragMargin);
+                if (!inWidth || !inHeight) return;
+            }
+            this.pos1 = this.pos3 - e.clientX;
+            this.pos2 = this.pos4 - e.clientY;
+            this.pos3 = e.clientX;
+            this.pos4 = e.clientY;        
+            this.style.top = (this.offsetTop - this.pos2) + "px";
+            this.style.left = (this.offsetLeft - this.pos1) + "px";
+            this.pushOtherTilesBack();
+        }
+
+        pushOtherTilesBack()
+        {        
+            var letters = document.getElementsByTagName("x-tile");    
+            for (var i=letters.length - 1; i>=0; i--)
+            {
+                var tile = letters[i];
+                if (tile.id != this.id) tile.style.zIndex=i;
+            }
+            this.style.zIndex = letters.length;
+        }
+
+        touchMove(e) 
+        {        
+            e = e || window.event;
+            e.preventDefault();
+            // console.log(e);
+            if (this.isLastOne())
+            {
+                var rect = this.getBoundingClientRect();
+                var dragMargin = rect.width / 2;
+                var inWidth = e.touches[0].clientX >= dragMargin && e.touches[0].clientX < (window.innerWidth - dragMargin);
+                var inHeight = e.touches[0].clientY >= dragMargin && e.touches[0].clientY < (window.innerHeight - dragMargin);
+                if (!inWidth || !inHeight) return;        
+            }
+            this.pos1 = this.pos3 - e.touches[0].clientX;
+            this.pos2 = this.pos4 - e.touches[0].clientY;
+            this.pos3 = e.touches[0].clientX;
+            this.pos4 = e.touches[0].clientY;        
+            this.style.top = (this.offsetTop - this.pos2) + "px";
+            this.style.left = (this.offsetLeft - this.pos1) + "px";
+            this.pushOtherTilesBack();
+        }
+
+        onMouseOver(e)
         {
-            var rect = this.getBoundingClientRect();
-            var dragMargin = rect.width / 2;
-            var inWidth = e.clientX >= dragMargin && e.clientX < (window.innerWidth - dragMargin);
-            var inHeight = e.clientY >= dragMargin && e.clientY < (window.innerHeight - dragMargin);
-            if (!inWidth || !inHeight) return;
+            console.log(e);
         }
-        this.pos1 = this.pos3 - e.clientX;
-        this.pos2 = this.pos4 - e.clientY;
-        this.pos3 = e.clientX;
-        this.pos4 = e.clientY;        
-        this.style.top = (this.offsetTop - this.pos2) + "px";
-        this.style.left = (this.offsetLeft - this.pos1) + "px";
-        this.pushOtherTilesBack();
+
+        updateRadar()
+        {
+            var width = this.getBoundingClientRect().width;
+            var middle = width/2;
+            console.log("middle:" + middle + ", width:" + width);  
+            var x1 = this.offsetLeft + middle;
+            var y1 = this.offsetTop + middle;        
+            var letterTiles = document.getElementsByTagName("x-tile");
+            letterTiles.forEach( (tile) => {
+                if (tile.id != this.id)
+                {
+                    var x2 = tile.offsetLeft + middle;
+                    var y2 = tile.offsetTop + middle;
+                    var angle = direction(x1,y1,x2,y2);
+                    var dist = distance(x1,y1,x2,y2);
+                    console.log(this.id, tile.id, dist, angle);
+                }
+            });  
+        }
     }
 
-    pushOtherTilesBack()
-    {        
+
+    customElements.define('x-tile', XTile);
+
+    function setColor() {
+        let params = new URLSearchParams(document.location.search);
+        return params.get("color") || "red"
+    }
+    
+    document.addEventListener("DOMContentLoaded", function(event){
+        const color = setColor();
+        configureControls();
+        addTiles(color);
+    });
+
+    function configureControls()
+    {
+        document.getElementsByClassName("control").forEach((element)=>{ element.lock(); });
+        document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
+        document.addEventListener("keyup", (e)=>{
+            var letter = ("" + e.key).toLowerCase();
+            console.log(letter);
+            copyLetter(letter); 
+        });
+
+    }
+
+    letterTiles = [];
+
+    function addTiles(color)
+    {    
+        letters = "abcdefghijklmnopqrstuvwxyz"; 
+        var i = 0;
+        var offsetX = 0;
+        var offsetY = 0;
+        var container = document.getElementById("letters_box");
+        for (var i=0; i<letters.length; i++)
+        {
+            var letter = letters[i];
+            var tile = new XTile(letter);        
+            tile.id = "XTile_" + i;
+            container.appendChild(tile);
+            tile.style.top = offsetY + "px";
+            tile.style.left = offsetX + "px";
+            tile.style.zIndex = 0;
+            tile.style.backgroundColor = color;
+            var bounds = tile.getBoundingClientRect();
+            var size = bounds.width;        
+            offsetX = offsetX + size;
+            if (offsetX > (window.innerWidth - size))
+            {
+                offsetY += size;
+                offsetX = 0;
+            }
+            letterTiles[tile.id] = tile;
+        };
+    }
+
+    function copyLetter(letter)
+    {
         var letters = document.getElementsByTagName("x-tile");    
         for (var i=letters.length - 1; i>=0; i--)
         {
             var tile = letters[i];
-            if (tile.id != this.id) tile.style.zIndex=i;
+            if (tile.innerText == letter)
+            {            
+                var newTile = new XTile(letter);
+                newTile.id = "XTile_" + letters.length;
+                var bounds = tile.getBoundingClientRect();
+                var offset = bounds.width / 2;
+                if ((tile.offsetTop + bounds.height) > (window.innerHeight - offset) ||            
+                    (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
+                newTile.style.top = (tile.offsetTop + offset) + "px";
+                newTile.style.left = (tile.offsetLeft + offset) + "px";
+                var container = document.getElementById("letters_box");
+                container.appendChild(newTile);
+                break;
+            }        
         }
-        this.style.zIndex = letters.length;
     }
 
-    touchMove(e) 
-    {        
-        e = e || window.event;
-        e.preventDefault();
-        // console.log(e);
-        if (this.isLastOne())
-        {
-            var rect = this.getBoundingClientRect();
-            var dragMargin = rect.width / 2;
-            var inWidth = e.touches[0].clientX >= dragMargin && e.touches[0].clientX < (window.innerWidth - dragMargin);
-            var inHeight = e.touches[0].clientY >= dragMargin && e.touches[0].clientY < (window.innerHeight - dragMargin);
-            if (!inWidth || !inHeight) return;        
-        }
-        this.pos1 = this.pos3 - e.touches[0].clientX;
-        this.pos2 = this.pos4 - e.touches[0].clientY;
-        this.pos3 = e.touches[0].clientX;
-        this.pos4 = e.touches[0].clientY;        
-        this.style.top = (this.offsetTop - this.pos2) + "px";
-        this.style.left = (this.offsetLeft - this.pos1) + "px";
-        this.pushOtherTilesBack();
-    }
-
-    onMouseOver(e)
+    function distance(x1,y1,x2,y2)
     {
-        console.log(e);
+        return Math.sqrt( Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2) );
     }
 
-    updateRadar()
+    function direction(x1,y1,x2,y2)
     {
-        var width = this.getBoundingClientRect().width;
-        var middle = width/2;
-        console.log("middle:" + middle + ", width:" + width);  
-        var x1 = this.offsetLeft + middle;
-        var y1 = this.offsetTop + middle;        
-        var letterTiles = document.getElementsByTagName("x-tile");
-        letterTiles.forEach( (tile) => {
-            if (tile.id != this.id)
-            {
-                var x2 = tile.offsetLeft + middle;
-                var y2 = tile.offsetTop + middle;
-                var angle = direction(x1,y1,x2,y2);
-                var dist = distance(x1,y1,x2,y2);
-                console.log(this.id, tile.id, dist, angle);
-            }
-        });  
+        return Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
     }
-}
-
-
-customElements.define('x-tile', XTile);
-
-document.addEventListener("DOMContentLoaded", function(event){
-    configureControls();
-    addTiles();
-});
-
-function configureControls()
-{
-    document.getElementsByClassName("control").forEach((element)=>{ element.lock(); });
-    document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
-    document.addEventListener("keyup", (e)=>{
-        var letter = ("" + e.key).toLowerCase();
-        console.log(letter);
-        copyLetter(letter); 
-    });
-
-}
-
-letterTiles = [];
-
-function addTiles()
-{    
-    letters = "abcdefghijklmnopqrstuvwxyz"; 
-    var i = 0;
-    var offsetX = 0;
-    var offsetY = 0;
-    var container = document.getElementById("letters_box");
-    for (var i=0; i<letters.length; i++)
-    {
-        var letter = letters[i];
-        var tile = new XTile(letter);        
-        tile.id = "XTile_" + i;        
-        container.appendChild(tile);
-        tile.style.top = offsetY + "px";
-        tile.style.left = offsetX + "px";
-        tile.style.zIndex = 0;
-        var bounds = tile.getBoundingClientRect();
-        var size = bounds.width;        
-        offsetX = offsetX + size;
-        if (offsetX > (window.innerWidth - size))
-        {
-            offsetY += size;
-            offsetX = 0;
-        }
-        letterTiles[tile.id] = tile;
-    };
-}
-
-function copyLetter(letter)
-{
-    var letters = document.getElementsByTagName("x-tile");    
-    for (var i=letters.length - 1; i>=0; i--)
-    {
-        var tile = letters[i];
-        if (tile.innerText == letter)
-        {            
-            var newTile = new XTile(letter);
-            newTile.id = "XTile_" + letters.length;
-            var bounds = tile.getBoundingClientRect();
-            var offset = bounds.width / 2;
-            if ((tile.offsetTop + bounds.height) > (window.innerHeight - offset) ||            
-                (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
-            newTile.style.top = (tile.offsetTop + offset) + "px";
-            newTile.style.left = (tile.offsetLeft + offset) + "px";
-            var container = document.getElementById("letters_box");
-            container.appendChild(newTile);
-            break;
-        }        
-    }
-}
-
-function distance(x1,y1,x2,y2)
-{
-    return Math.sqrt( Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2) );
-}
-
-function direction(x1,y1,x2,y2)
-{
-    return Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
-}
 
 </script>
 
