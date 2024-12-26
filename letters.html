@@ -105,10 +105,31 @@ x-tile.hoverdrag
     display: none;
 }
 
+.rainbowed {
+    width: 80vw;
+    height: 200px;
+    border-radius: 5px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 1) 0%,
+        rgba(255, 154, 0, 1) 10%,
+        rgba(208, 222, 33, 1) 20%,
+        rgba(79, 220, 74, 1) 30%,
+        rgba(63, 218, 216, 1) 40%,
+        rgba(47, 201, 226, 1) 50%,
+        rgba(28, 127, 238, 1) 60%,
+        rgba(95, 21, 242, 1) 70%,
+        rgba(186, 12, 248, 1) 80%,
+        rgba(251, 7, 217, 1) 90%,
+        rgba(255, 0, 0, 1) 100%
+    );
+}
 
 </style>
 
 <script>
+
+    
 
     HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
@@ -315,9 +336,8 @@ x-tile.hoverdrag
     }
     
     document.addEventListener("DOMContentLoaded", function(event){
-        const color = setColor();
         configureControls();
-        addTiles(color);
+        addTiles();
     });
 
     function configureControls()
@@ -350,7 +370,7 @@ x-tile.hoverdrag
             tile.style.top = offsetY + "px";
             tile.style.left = offsetX + "px";
             tile.style.zIndex = 0;
-            tile.style.backgroundColor = color;
+            tile.style.backgroundColor = setColor();
             var bounds = tile.getBoundingClientRect();
             var size = bounds.width;        
             offsetX = offsetX + size;
@@ -379,6 +399,7 @@ x-tile.hoverdrag
                     (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
                 newTile.style.top = (tile.offsetTop + offset) + "px";
                 newTile.style.left = (tile.offsetLeft + offset) + "px";
+                newTile.style.backgroundColor = setColor();
                 var container = document.getElementById("letters_box");
                 container.appendChild(newTile);
                 break;
