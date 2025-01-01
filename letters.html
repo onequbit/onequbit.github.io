@@ -12,7 +12,7 @@
         </div>
     </div>
     <div class="row">
-        <div id="letters_box" class="container">            
+        <div id="letters_box" class="container">
         </div>
     </div>
 </body>
@@ -45,9 +45,13 @@ body
 }
 
 x-tile
-{        
-    border: 1px solid black;
+{
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    background-color: red;
     border-radius: 1vh;
+    border: 1px solid black;
     color: white;
     display: inline-block;    
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -58,17 +62,9 @@ x-tile
     padding-left: 1vh;
     padding-right: 1vh;
     text-align: center;
-    vertical-align:top;
-    width: var(--size-cell);         
-}
-
-x-tile
-{    
-    background-color: red;
     user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
+    vertical-align:top;
+    width: var(--size-cell);
 }
 
 .control, x-tile.locked
@@ -98,10 +94,6 @@ x-tile.hoverdrag
 {    
     position: relative;
     display: inline;    
-}
-
-#trash
-{
 }
 
 .rainbow {
@@ -150,13 +142,24 @@ x-tile.hoverdrag
         return midX < 0 || midX > window.innerWidth || midY < 0 || midY > window.innerHeight;
     }
 
+    function isDivInView(div) {
+        const rect = div.getBoundingClientRect();
+
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+
     class XTile extends HTMLElement
     {
         constructor(contents)
         {
             super();
             if (contents)
-            {            
+            {
                 this.innerText = contents;
             }
             this.pos1 = 0;
@@ -166,13 +169,6 @@ x-tile.hoverdrag
             this.style.cursor = "move";
             this.style.position = "absolute";
             this.draggable = true;
-            // this.addEventListener("mousedown", this.mouseDown);
-            // this.addEventListener("dragstart", this.startDragging);
-            // this.addEventListener("mouseup", this.endDragging);
-            // this.addEventListener("touchstart", this.touchStart);
-            // this.addEventListener("touchmove", this.touchMove);
-            // this.addEventListener("touchend", this.endDragging); 
-            // this.addEventListener("touchenter", this.onMouseOver);                       
             this.distanceTo = [];
         }
 
@@ -212,7 +208,6 @@ x-tile.hoverdrag
             this.pos4 = movementY;
             this.style.top = (this.offsetTop - this.pos2) + "px";
             this.style.left = (this.offsetLeft - this.pos1) + "px";
-            
         }   
     
         lockTile()
@@ -224,7 +219,7 @@ x-tile.hoverdrag
             // this.removeEventListener("touchend", this.endDragging);
             // this.removeEventListener("mouseleave", this.endDragging);
             // this.removeEventListener("mouseexit", this.endDragging);
-            this.style = "";           
+            this.style = "";
         }
 
     }
@@ -233,31 +228,32 @@ x-tile.hoverdrag
 
     function startDraggingLetter(event)
     {
+        event = event || window.event;
         event.preventDefault();
         var tile = event.target;
         console.log("startDragging:", event);
-        // event.dataTransfer.setData('text/plain', tile.id);
-        // tile.addEventListener("dragend", endDragLetter);
+        tile.addEventListener("dragend", endDraggingLetter, false);
+        return false;
     }
 
     function endDraggingLetter(event)
     {
+        event = event || window.event;
+        event.preventDefault();
         console.log("endDragging:", event);
         var tile = event.target;
-        tile.removeEventListener("mousemove", mouseMoveLetter);
         if (tile.isOffPage())
         {
             if (!isLastLetter(tile)) 
             {
                 tile.remove();
-            }                   
+            } 
         }
         pushOtherTilesBack(tile);
-        // tile.updateRadar();
     }
 
     function isLastLetter(tile)
-    {        
+    {
         var count = 0;
         var others = document.getElementsByTagName("x-tile");
         others.forEach((tile)=>{
@@ -268,22 +264,38 @@ x-tile.hoverdrag
 
     function mouseDownLetter(event) 
     {   
-        // console.log(event);
         event = event || window.event;
-        if (event.which == 3) return;
         event.preventDefault();
+        if (event.which == 3) return;
+        // console.log(event);
         var tile = event.target;
         pushOtherTilesBack(tile);
         tile.pos3 = event.clientX;
         tile.pos4 = event.clientY;
-        tile.addEventListener("mousemove", mouseMoveLetter);
-        // tile.onmousemove = tile.mouseMoveLetter; 
+        tile.addEventListener("mousemove", mouseMoveLetter); 
+    }
+
+    function mouseUpLetter(event)
+    {
+        event = event || window.event;
+        event.preventDefault();
+        // console.log("mouseUpLetter:", event);
+        var tile = event.target;
+        tile.removeEventListener("mousemove", mouseMoveLetter); 
+        if (tile.isOffPage())
+        {
+            if (!isLastLetter(tile)) 
+            {
+                tile.remove();
+            } 
+        }
+        pushOtherTilesBack(tile);
     }
 
     function startTouchLetter(event) 
-    {        
-        // event = event || window.event;
-        // event.preventDefault();
+    {
+        event = event || window.event;
+        event.preventDefault();
         var tile = event.target;
         pushOtherTilesBack(tile);
         tile.pos3 = event.touches[0].clientX;
@@ -294,8 +306,7 @@ x-tile.hoverdrag
     {        
         event = event || window.event;
         event.preventDefault(); 
-        // console.log(event);
-        var tile = event.target;        
+        var tile = event.target;
         if (isLastLetter(tile)) tile.restrictObject(event, event.clientX, event.clientY);
         tile.moveObject(event, event.clientX, event.clientY)
     }
@@ -303,42 +314,39 @@ x-tile.hoverdrag
     function pushOtherTilesBack(thistile)
     {        
         var letters = document.getElementsByTagName("x-tile");
+        var toBeRemoved = [];
         for (var i=letters.length - 1; i>=0; i--)
         {
             var tile = letters[i];
             if (tile.id != thistile.id) tile.style.zIndex=i;
             else tile.style.zIndex = letters.length;
         }
+        toBeRemoved.forEach((item) => item.remove());
     }
 
     function touchMoveLetter(event) 
-    {        
-        // event = event || window.event;
-        // event.preventDefault();
+    {
+        event = event || window.event;
+        event.preventDefault();
         var tile = event.target; 
         if (isLastLetter(tile)) tile.restrictObject(event, event.touches[0].clientX, event.touches[0].clientY);
         tile.moveObject(event, event.touches[0].clientX, event.touches[0].clientY)
     }
 
-    function endDragLetter(event)
-    {
+    function dragOverHandler(event) {
+        event = event || window.event;
         event.preventDefault();
-        // console.log(event);
-        event.dataTransfer.setData('text/html', event); //cannot be empty string
-    }
-
-    function dragoverHandler(event) {
-        event.preventDefault();
-        // console.log("dragoverHandler:", event);
+        console.log("dragOverHandler:", event);
+        event.dataTransfer.dropEffect = 'move';
+        const data = event.dataTransfer.getData('text'); // Or other data types
+        // console.log("dropHandler:", event, data);
     }
 
     function dropHandler(event) {
-        // Prevent default behavior
-        // event.preventDefault();
-
-        // Handle the dropped data
+        event = event || window.event;
+        event.preventDefault();
         const data = event.dataTransfer.getData('text'); // Or other data types
-        console.log("dropHandler:", event);
+        console.log("dropHandler:", event, data);
     }
 
     function onMouseOver(event)
@@ -348,7 +356,7 @@ x-tile.hoverdrag
 
     function getColorParameter() {
         let params = new URLSearchParams(document.location.search);
-        let color = params.get("color")
+        let color = params.get("color")                                                                                                                                                                                                                          
         if (!color) color = "red";
         console.log(color);
         return color;
@@ -357,14 +365,15 @@ x-tile.hoverdrag
     function configureControls()
     {
         document.getElementsByClassName("control").forEach((element)=>{ element.lockTile(); });
-        document.getElementById("reload").addEventListener("click", function(){ location.reload(); });
+        document.getElementById("reload").addEventListener("click", function(){ location.reload(); }, false);
         document.addEventListener("keyup", (e)=>{
             var letter = ("" + e.key).toLowerCase();
             copyLetter(letter); 
-        });
-        const trash = document.getElementById("trash");
-        trash.addEventListener("dragover", dragoverHandler);
-        trash.addEventListener("drop", dropHandler);
+        }, false);
+        document.getElementById("trash").addEventListener("drop", dropHandler, false );
+
+        document.getElementById("trash").addEventListener("dragover", dragOverHandler, false );
+
     }
 
     letterTiles = [];
@@ -378,12 +387,16 @@ x-tile.hoverdrag
         {
             var letter = letters[i];
             var tile = newLetterTile(letter, offsetX, offsetY);
+            tile.addEventListener('dragstart', (event) => {
+                console.log("dragstart:", event);
+                event.dataTransfer.setData('text/plain', event);
+            }, false);
             document.getElementById("letters_box").appendChild(tile);
             tile.style.top = offsetY + "px";
             tile.style.left = offsetX + "px";
-            tile.style.zIndex = 0;
+            tile.style.zIndex -= 1;
             var bounds = tile.getBoundingClientRect();
-            var size = bounds.width;        
+            var size = bounds.width;
             offsetX = offsetX + size;
             if (offsetX > (window.innerWidth - size))
             {
@@ -408,16 +421,15 @@ x-tile.hoverdrag
             var tile = letters[i];
             if (tile.innerText == letter)
             {
-                pushOtherTilesBack(tile);
                 var bounds = tile.getBoundingClientRect();
                 var copyOffset = bounds.width / 8;
                 var top = tile.offsetTop + copyOffset;
                 var left = tile.offsetLeft + copyOffset;
                 var newTile = newLetterTile(letter, top, left, copyOffset);
                 letters_box.appendChild(newTile);
-                pushOtherTilesBack(tile);
+                pushOtherTilesBack(newTile);
                 break;
-            }        
+            }
         }
     }
 
@@ -435,13 +447,12 @@ x-tile.hoverdrag
             newTile.style.backgroundColor = colorParam;
         }
         newTile.id = newTile.getCustomTagName() + "_" + window.crypto.randomUUID().split('-')[0];
-        newTile.addEventListener("mousedown", mouseDownLetter);
-        newTile.addEventListener("dragstart", startDraggingLetter);
-        newTile.addEventListener("mouseup", endDraggingLetter);
-        newTile.addEventListener("touchstart", startTouchLetter);
-        newTile.addEventListener("touchmove", touchMoveLetter);
-        newTile.addEventListener("touchend", endDraggingLetter); 
-        newTile.addEventListener("touchenter", onMouseOver);     
+        newTile.addEventListener("mousedown", mouseDownLetter, false);
+        newTile.addEventListener("dragstart", startDraggingLetter, false);
+        newTile.addEventListener("dragend", endDraggingLetter, false);
+        newTile.addEventListener("mouseup", mouseUpLetter, false);
+        newTile.addEventListener("touchstart", startTouchLetter, false);
+        newTile.addEventListener("touchmove", touchMoveLetter, false);
         return newTile;
     }
 
