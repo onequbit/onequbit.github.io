@@ -71,6 +71,7 @@ x-tile
 {
     background-color: lightgrey;
     color: black; 
+    z-index: -10000;
 }
 
 
@@ -158,14 +159,15 @@ x-tile.hoverdrag
             this.style.cursor = "move";
             this.style.position = "absolute";
             this.draggable = true;               
-            this.addEventListener("mousedown", this.mouseDown);  
-            this.addEventListener("mouseup", this.closeDragElement);
+            this.addEventListener("mousedown", this.mouseDown);
             this.addEventListener("touchstart", this.touchStart);
             this.addEventListener("touchmove", this.touchMove);
-            this.addEventListener("touchend", this.closeDragElement); 
-            this.addEventListener("touchenter", this.onMouseOver);                       
-            this.addEventListener("mouseleave", this.closeDragElement);
-            this.addEventListener("mouseexit", this.closeDragElement);
+            this.addEventListener("touchenter", this.onMouseOver);
+
+            // this.addEventListener("mouseup", this.closeDragElement);    
+            // this.addEventListener("touchend", this.closeDragElement); 
+            // this.addEventListener("mouseleave", this.closeDragElement);
+            // this.addEventListener("mouseexit", this.closeDragElement);
             this.distanceTo = [];        
         }
 
@@ -197,6 +199,9 @@ x-tile.hoverdrag
 
         closeDragElement()
         {
+            // console.log(this, event);
+            event = event || window.event;
+            event.preventDefault();
             this.onmousemove = null;
             if (this.isOffPage())
             {
@@ -212,11 +217,9 @@ x-tile.hoverdrag
 
         mouseDown(event) 
         {
-            console.log(this, event);
             event = event || window.event;
             if (event.which == 3) return;
             event.preventDefault();
-            console.log(event);
             this.pos3 = event.clientX;
             this.pos4 = event.clientY;
             this.onmousemove = this.mouseMove; 
@@ -234,7 +237,6 @@ x-tile.hoverdrag
 
         mouseMove(event) 
         {
-            console.log(this, event);
             event = event || window.event;
             event.preventDefault();
             if (this.isLastOne())
@@ -246,23 +248,23 @@ x-tile.hoverdrag
                 if (!inWidth || !inHeight) return;
             }
             this.setPosition(event.clientX, event.clientY);
-            this.pushOtherTilesBack();
         }
 
         onmouseout(event)
         {
-            console.log(this, event);
+            // console.log(this, event);
         }
 
         pushOtherTilesBack()
         {
-            var letters = document.getElementsByTagName("x-tile");    
-            for (var i=letters.length - 1; i>=0; i--)
+            var x_tiles = document.getElementsByTagName("x-tile");    
+            for (var i=x_tiles.length - 1; i>=0; i--)
             {
-                var tile = letters[i];
-                if (tile.id != this.id) tile.style.zIndex=i;
+                var tile = x_tiles[i];
+                if (tile.id != this.id && tile.draggable) tile.style.zIndex=-i;
             }
-            this.style.zIndex = letters.length;
+            this.style.zIndex = x_tiles.length;
+            this.focus();
         }
 
         restrictObject(movementX, movementY)
@@ -310,8 +312,8 @@ x-tile.hoverdrag
                 {
                     var x2 = tile.offsetLeft + middle;
                     var y2 = tile.offsetTop + middle;
-                    var angle = direction(x1,y1,x2,y2);
-                    var dist = distance(x1,y1,x2,y2);
+                    var angle = getDirection(x1,y1,x2,y2);
+                    var dist = getDistance(x1,y1,x2,y2);
                 }
             });  
         }
@@ -319,16 +321,10 @@ x-tile.hoverdrag
 
     customElements.define('x-tile', XTile);
 
-    function setColor() {
-        let params = new URLSearchParams(document.location.search);
-        return params.get("color") || "red"
-    }
-
     function getColorParameter() {
         let params = new URLSearchParams(document.location.search);
         let color = params.get("color")                                                                                                                                                                                                                          
         if (!color) color = "red";
-        console.log(color);
         return color;
     }
 
@@ -338,10 +334,10 @@ x-tile.hoverdrag
         document.getElementById("reload").addEventListener("click",function(){ location.reload(); });
         document.addEventListener("keyup", (e)=>{
             var letter = ("" + e.key).toLowerCase();
-            console.log(letter);
             copyLetter(letter); 
         });
-
+        const trash = document.getElementById("trash");
+        trash.lock();
     }
 
     letterTiles = [];
@@ -374,11 +370,6 @@ x-tile.hoverdrag
         };
     }
 
-    function deleteLetter(event)
-    {
-        // console.log(event);
-    }
-
     function copyLetter(letter)
     {
         var letters = document.getElementsByTagName("x-tile");    
@@ -388,10 +379,12 @@ x-tile.hoverdrag
             if (tile.innerText == letter)
             {
                 var bounds = tile.getBoundingClientRect();
-                var offset = bounds.width / 2;
-                var newTile = newLetterTile(letter, top, left, copyOffset);
+                var offset = bounds.width / 4;
+                if ((tile.offsetTop + bounds.height) > (window.innerHeight - offset) ||            
+                    (tile.offsetLeft + bounds.width) > (window.innerWidth - offset)) break;
+                var newTile = newLetterTile(letter, tile.offsetTop, tile.offsetLeft, offset);
                 letters_box.appendChild(newTile);
-                pushOtherTilesBack(newTile);
+                newTile.pushOtherTilesBack();
                 break;
             }
         }
@@ -411,17 +404,63 @@ x-tile.hoverdrag
             newTile.style.backgroundColor = colorParam;
         }
         newTile.id = newTile.getCustomTagName() + "_" + window.crypto.randomUUID().split('-')[0];
+        newTile.addEventListener("mouseup", releaseTile);
+        newTile.addEventListener("touchend", releaseTile); 
+        newTile.addEventListener("mouseleave", releaseTile);
+        newTile.addEventListener("mouseexit", releaseTile);
         return newTile;
     }
 
-    function distance(x1,y1,x2,y2)
+    function releaseTile(event)
+    {
+        event = event || window.event;
+        event.preventDefault();
+        
+        var distance = trashDistance(event);
+        var tile = document.getElementById(event.target.id);
+        tile.onmousemove = null;
+        var tileBounds = tile.getBoundingClientRect();
+        var threshold = (tileBounds.width + tileBounds.height)/2;
+        var release = distance < threshold;
+        if (release && !tile.isLastOne())
+        {
+            event.target.remove();
+        } 
+    }
+
+    function trashDistance(event)
+    {
+        // console.log("trashDistance:", event);
+        var tile = event.target;
+        var trash = document.getElementById("trash");
+        var tileBounds = tile.getBoundingClientRect();
+        var tileX = tileBounds.x + tileBounds.width / 2;
+        var tileY = tileBounds.y + tileBounds.height / 2;
+        var trashBounds = trash.getBoundingClientRect();
+        var trashX = trashBounds.left + trashBounds.width / 2;
+        var trashY = trashBounds.top + trashBounds.height / 2;
+        distance = getDistance(tileX, tileY, trashX, trashY);
+        return distance;
+    }
+
+    function getDistance(x1,y1,x2,y2)
     {
         return Math.sqrt( Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2) );
     }
 
-    function direction(x1,y1,x2,y2)
+    function getDirection(x1,y1,x2,y2)
     {
         return Math.atan2(y2-y1,x2-x1) * 180 / Math.PI;
+    }
+
+    function dragoverHandler(event)
+    {
+        // console.log(event);
+    }
+
+    function dropHandler(event)
+    {
+        console.log(event);
     }
 
     document.addEventListener("DOMContentLoaded", function(event){
