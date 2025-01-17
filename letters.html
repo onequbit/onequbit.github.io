@@ -119,6 +119,8 @@ x-tile.hoverdrag
 
 <script>
 
+    const TILE_SET = "abcdefghijklmnopqrstuvwxyz1234567890";
+
     HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
     HTMLElement.prototype.getCustomTagName = function(){
@@ -173,8 +175,8 @@ x-tile.hoverdrag
 
         setPosition(newX, newY)
         {
-            console.log(this.pos1, this.pos2, this.pos3, this.pos4);
-            console.log(newX, newY);
+            // console.log(this.pos1, this.pos2, this.pos3, this.pos4);
+            // console.log(newX, newY);
             this.pos1 = this.pos3 - newX;
             this.pos2 = this.pos4 - newY;
             this.pos3 = newX;
@@ -206,34 +208,32 @@ x-tile.hoverdrag
 
     function isLastOne(tile)
     {
-        console.log("isLastOne:", tile);
         var count = 0;
         var others = document.getElementsByTagName("x-tile");
-        console.log("others:", others.length);
         others.forEach((otherTile)=>{
             if (tile.innerText == otherTile.innerText) count++; 
         });
-        console.log("count:", count);
         return count <= 1;
     }
 
-    function closeDragElement(event)
-    {
-        event = event || window.event;
-        event.preventDefault();
-        var tile = document.getElementById(event.target.id);
-        tile.onmousemove = null;
-        if (tile.isOffPage())
-        {
-            console.log(tile, "is off page");
-            if (!isLastOne(tile)) 
-            {
-                tile.remove();
-            }
-        }
-        tile.pushOtherTilesBack();
-        tile.updateRadar();
-    }
+    // function closeDragElement(event)
+    // {
+    //     console.log("closeDragElement");
+    //     event = event || window.event;
+    //     event.preventDefault();
+    //     var tile = document.getElementById(event.target.id);
+    //     tile.onmousemove = null;
+    //     if (tile.isOffPage())
+    //     {
+    //         // console.log(tile, "is off page");
+    //         if (!isLastOne(tile)) 
+    //         {
+    //             tile.remove();
+    //         }
+    //     }
+    //     tile.pushOtherTilesBack();
+    //     tile.updateRadar();
+    // }
     
     function pushOtherTilesBack(thisTile)
     {
@@ -313,7 +313,6 @@ x-tile.hoverdrag
         tile.removeEventListener("mousedown", mouseDownHandler);
         tile.removeEventListener("touchstart", touchStartHandler);
         tile.removeEventListener("touchmove", touchMoveHandler);
-        tile.removeEventListener("touchend", closeDragElement);
         tile.classList.add("locked");
         tile.style = "";
     }
@@ -334,7 +333,7 @@ x-tile.hoverdrag
 
     function addTiles(color)
     {    
-        letters = "abcdefghijklmnopqrstuvwxyz"; 
+        letters = TILE_SET;
         var i = 0;
         var offsetX = 0;
         var offsetY = 0;
@@ -455,7 +454,7 @@ x-tile.hoverdrag
 
     function dropHandler(event)
     {
-        console.log(event);
+        // console.log(event);
     }
 
     document.addEventListener("DOMContentLoaded", function(event){
