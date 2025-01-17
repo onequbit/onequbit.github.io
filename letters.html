@@ -190,7 +190,7 @@ x-tile.hoverdrag
             var width = this.getBoundingClientRect().width;
             var middle = width/2;
             var x1 = this.offsetLeft + middle;
-            var y1 = this.offsetTop + middle;        
+            var y1 = this.offsetTop + middle;
             var letterTiles = document.getElementsByTagName("x-tile");
             letterTiles.forEach( (tile) => {
                 if (tile.id != this.id)
@@ -234,6 +234,11 @@ x-tile.hoverdrag
     //     tile.pushOtherTilesBack();
     //     tile.updateRadar();
     // }
+
+    function tileMovementStopped(event, comment="")
+    {
+        // console.log("tileMovementStopped: " + comment, event);
+    }
     
     function pushOtherTilesBack(thisTile)
     {
@@ -273,6 +278,7 @@ x-tile.hoverdrag
             if (!inWidth || !inHeight) return;
         }
         tile.setPosition(event.clientX, event.clientY);
+        tileMovementStopped(event, "mouseMoveHandler");
     }
 
     function onMouseOverHandler(event)
@@ -298,6 +304,7 @@ x-tile.hoverdrag
         if (isLastOne(tile)) tile.restrictObject(event.touches[0].clientX, event.touches[0].clientY);
         tile.setPosition(event.touches[0].clientX, event.touches[0].clientY);
         pushOtherTilesBack(tile);
+        tileMovementStopped(event, "touchMoveHandlers");
     }
 
     function getColorParameter() {
