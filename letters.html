@@ -216,37 +216,18 @@ x-tile.hoverdrag
         return count <= 1;
     }
 
-    // function closeDragElement(event)
-    // {
-    //     console.log("closeDragElement");
-    //     event = event || window.event;
-    //     event.preventDefault();
-    //     var tile = document.getElementById(event.target.id);
-    //     tile.onmousemove = null;
-    //     if (tile.isOffPage())
-    //     {
-    //         // console.log(tile, "is off page");
-    //         if (!isLastOne(tile)) 
-    //         {
-    //             tile.remove();
-    //         }
-    //     }
-    //     tile.pushOtherTilesBack();
-    //     tile.updateRadar();
-    // }
 
     function tileMovementStopped(event, comment="")
     {
-        // console.log("tileMovementStopped: " + comment, event);
+
     }
     
     function pushOtherTilesBack(thisTile)
     {
         var x_tiles = document.getElementsByTagName("x-tile");
-        for (var i=x_tiles.length - 1; i>=0; i--)
+        for (var i=0; i<x_tiles.length; i++)
         {
-            var tile = x_tiles[i];
-            if (tile.id != thisTile.id && tile.draggable) tile.style.zIndex=-i;
+            if (x_tiles[i].draggable && x_tiles[i].id != thisTile.id) x_tiles[i].style.zIndex = -x_tiles.length;
         }
         thisTile.style.zIndex = x_tiles.length;
         thisTile.focus();
@@ -283,7 +264,7 @@ x-tile.hoverdrag
 
     function onMouseOverHandler(event)
     {
-        // console.log(event);
+        
     }
 
     function touchStartHandler(event) 
@@ -315,7 +296,7 @@ x-tile.hoverdrag
 
     function getColorParameter() {
         let params = new URLSearchParams(document.location.search);
-        let color = params.get("color")                                                                                                                                                                                                                          
+        let color = params.get("color");
         if (!color) color = "red";
         return color;
     }
@@ -323,10 +304,6 @@ x-tile.hoverdrag
     function lockTile(tile)
     {   
         tile.draggable = false;     
-        // tile.removeEventListener("mousedown", mouseDownHandler);
-        tile.removeEventListener("touchstart", touchStartHandler);
-        tile.removeEventListener("touchmove", touchMoveHandler);
-        tile.classList.add("locked");
         tile.style = "";
     }
 
@@ -437,7 +414,6 @@ x-tile.hoverdrag
 
     function trashDistance(event)
     {
-        // console.log("trashDistance:", event);
         var tile = event.target;
         var trash = document.getElementById("trash");
         var tileBounds = tile.getBoundingClientRect();
@@ -462,12 +438,11 @@ x-tile.hoverdrag
 
     function dragoverHandler(event)
     {
-        // console.log(event);
     }
 
     function dropHandler(event)
     {
-        // console.log(event);
+
     }
 
     document.addEventListener("DOMContentLoaded", function(event){
