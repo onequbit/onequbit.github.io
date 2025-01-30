@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" type="text/css" href="./css/calendar.css">  
+</head>
+<body>
+</body>
+<script type="text/javascript" src="./js/date_ext.js" > </script>
+<script>
+
+    function getHolidayMessage() {
+        console.log("main invoked");
+        var nextHoliday = Date.getNearestHoliday()
+        console.log(nextHoliday, nextHoliday.label);
+        var today = new Date(Date.now());
+        var daysUntil = today.daysUntil(nextHoliday);
+        messageStr = `According to our calculations, there are... ${daysUntil} days until ${nextHoliday.label}`;
+        document.body.innerText = messageStr;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("page loaded");
+        getHolidayMessage();
+    }, false);
+
+</script>
+</html>
