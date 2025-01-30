@@ -123,7 +123,7 @@ Date.prototype.nextDate = function(days = 1)
 
 Date.prototype.daysUntil = function(date)
 {
-    return Date.getDaysOffset(Date.now(), date) + 1;
+    return Date.getDaysOffset(Date.now(), date);
 }
 
 Date.getDaysInSpan = function*(start, end)
