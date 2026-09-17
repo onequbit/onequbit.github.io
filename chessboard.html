@@ -1,0 +1,241 @@
+<html>
+<head>
+
+</head>
+<body>
+    <div id="controls">
+        <button id="resetButton">Reset Board</button>            
+    </div>        
+    <div id="ChessBoardContainer"></div>
+    <div id="CaptureContainer"></div>    
+    
+    <script>        
+        // https://symbl.cc/en/unicode-table/#chess-symbols
+
+        
+
+        const Handlers = {
+            dragged : '',
+            onDragStartHandler : function(event)
+            {
+                dragged = event.target;            
+            },
+            onDragEndHandler : function(event)
+            {
+                dragged = null;            
+            },
+            onDropHandler : function(event)
+            {
+                const target = event.target;
+                if (target)
+                {                
+                    event.preventDefault();
+                    if (target.innerHTML!='') 
+                    {
+                        var cell = document.getElementById(target.id).parentElement;
+                        var captureBox = document.getElementById("CaptureContainer");
+                        captureBox.appendChild(target);
+                        cell.appendChild(dragged);
+                    }                    
+                    else 
+                    {
+                        target.appendChild(dragged);
+                    }
+                }
+            },
+            onDragEnterHandler : function(event)
+            {
+                const target = event.target;
+                if (target)
+                {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';                
+                }
+            },
+            onDragOverHandler : function(event)
+            {
+                event.preventDefault();            
+            },
+            onResetBoardButtonClick: function(event)
+            {
+                event.preventDefault();
+                console.log("Reset button clicked");
+                ResetPieces();
+            }
+        }
+
+        class ChessPiece
+        {
+            constructor(id, code, startLocation)
+            {                
+                this.Div = document.createElement("div");                
+                this.Div.setAttribute('id',id);
+                this.Div.innerHTML = code;
+                this.Div.className = "ChessPiece";
+                this.Div.setAttribute("draggable", "true");
+                this.Div.setAttribute("data-start", startLocation);
+                this.Div.addEventListener("dragstart", Handlers.onDragStartHandler);
+                this.Div.addEventListener("dragend", Handlers.onDragEndHandler);                
+                document.body.appendChild(this.Div);
+            }
+        }
+
+        class BoardCell
+        {
+            constructor(id, name)
+            {
+                this.Div = document.createElement("div");
+                this.Div.id = name;                                
+                this.Div.className = "BoardCell " + ((id % 2 == 0)? "white" : "black");
+                this.Div.addEventListener('drop', Handlers.onDropHandler);
+                this.Div.addEventListener('dragenter', Handlers.onDragEnterHandler);
+                this.Div.addEventListener('dragover', Handlers.onDragOverHandler);
+                document.getElementById("ChessBoardContainer").appendChild(this.Div);                    
+            }
+        }       
+
+        const HtmlCodes = (function(){
+            let codes = {};
+            const prefix = "&#98";
+            const colors = ['WHITE','BLACK'];
+            const ranks = ['KING','QUEEN','ROOK','BISHOP','KNIGHT','PAWN'];
+            let index = 12;
+            for (const color of colors) {
+                for (const rank of ranks) {
+                    codes[color+'_'+rank] = prefix + index++;                
+                }
+            }
+            return codes;
+        })();
+        
+        const ChessSet = function()
+        {   
+            // for (var col in ['A','B','C','D','E','F','G','H'])
+            // {
+            //     for (var row in [8,7,6,5,4,3,2,1])
+            //     {
+            //         const cell = col+row;
+                    
+            //     }
+            // }
+
+            // for (var code in HtmlCodes)
+            // {
+            //     console.log(code);
+            // }
+
+            return [                                        
+                new ChessPiece("WHITE_KING", HtmlCodes.WHITE_KING, "E8"),
+                new ChessPiece("WHITE_QUEEN", HtmlCodes.WHITE_QUEEN, "D8"),
+                new ChessPiece("WHITE_ROOK_A", HtmlCodes.WHITE_ROOK, "A8"),
+                new ChessPiece("WHITE_ROOK_H", HtmlCodes.WHITE_ROOK, "H8"),
+                new ChessPiece("WHITE_BISHOP_C", HtmlCodes.WHITE_BISHOP, "C8"),
+                new ChessPiece("WHITE_BISHOP_F", HtmlCodes.WHITE_BISHOP, "F8"),
+                new ChessPiece("WHITE_KNIGHT_B", HtmlCodes.WHITE_KNIGHT, "B8"),           
+                new ChessPiece("WHITE_KNIGHT_G", HtmlCodes.WHITE_KNIGHT, "G8"),           
+                new ChessPiece("BLACK_KING", HtmlCodes.BLACK_KING, "E1"),
+                new ChessPiece("BLACK_QUEEN", HtmlCodes.BLACK_QUEEN, "D1"),
+                new ChessPiece("BLACK_ROOK_A", HtmlCodes.BLACK_ROOK, "A1"),
+                new ChessPiece("BLACK_ROOK_H", HtmlCodes.BLACK_ROOK, "H1"),           
+                new ChessPiece("BLACK_BISHOP_C", HtmlCodes.BLACK_BISHOP, "C1"),
+                new ChessPiece("BLACK_BISHOP_F", HtmlCodes.BLACK_BISHOP, "F1"),
+                new ChessPiece("BLACK_KNIGHT_B", HtmlCodes.BLACK_KNIGHT, "B1"),
+                new ChessPiece("BLACK_KNIGHT_G", HtmlCodes.BLACK_KNIGHT, "G1"),
+                new ChessPiece("WHITE_PAWN_A", HtmlCodes.WHITE_PAWN, "A7"),
+                new ChessPiece("WHITE_PAWN_B", HtmlCodes.WHITE_PAWN, "B7"),
+                new ChessPiece("WHITE_PAWN_C", HtmlCodes.WHITE_PAWN, "C7"),
+                new ChessPiece("WHITE_PAWN_D", HtmlCodes.WHITE_PAWN, "D7"),
+                new ChessPiece("WHITE_PAWN_E", HtmlCodes.WHITE_PAWN, "E7"),
+                new ChessPiece("WHITE_PAWN_F", HtmlCodes.WHITE_PAWN, "F7"),
+                new ChessPiece("WHITE_PAWN_G", HtmlCodes.WHITE_PAWN, "G7"),
+                new ChessPiece("WHITE_PAWN_H", HtmlCodes.WHITE_PAWN, "H7"),
+                new ChessPiece("BLACK_PAWN_A", HtmlCodes.BLACK_PAWN, "A2"),           
+                new ChessPiece("BLACK_PAWN_B", HtmlCodes.BLACK_PAWN, "B2"),                       
+                new ChessPiece("BLACK_PAWN_C", HtmlCodes.BLACK_PAWN, "C2"),           
+                new ChessPiece("BLACK_PAWN_D", HtmlCodes.BLACK_PAWN, "D2"),           
+                new ChessPiece("BLACK_PAWN_E", HtmlCodes.BLACK_PAWN, "E2"),           
+                new ChessPiece("BLACK_PAWN_F", HtmlCodes.BLACK_PAWN, "F2"),                       
+                new ChessPiece("BLACK_PAWN_G", HtmlCodes.BLACK_PAWN, "G2"),           
+                new ChessPiece("BLACK_PAWN_H", HtmlCodes.BLACK_PAWN, "H2")
+            ];                
+        }
+
+        class ChessBoard        
+        {
+            constructor()
+            {
+                this.Cells = [];                             
+                let cellcounter = 0;                          
+                
+                for (var row of [8,7,6,5,4,3,2,1])
+                {
+                    for (var col of ['A','B','C','D','E','F','G','H'])
+                    {
+                        var cellName = col + row;                    
+                        this.Cells[cellName] = new BoardCell(cellcounter, cellName);
+                        cellcounter += 1;                    
+                    }
+                    cellcounter += 1;
+                }
+                this.pieces = new ChessSet();
+                this.reset();
+            }
+
+            reset()
+            {
+                this.pieces.forEach(piece =>                
+                {                    
+                    var targetId = piece.Div.getAttribute("data-start");
+                    var target = document.getElementById(targetId);                                        
+                    target.appendChild(piece.Div);
+                });
+            }
+        };
+                
+        var board = new ChessBoard();        
+        board.reset();
+        document.getElementById("resetButton"),addEventListener('click', ()=>{ board.reset() });        
+        // makeCodes();
+
+    </script>
+
+    <style>
+    [draggable="true"] 
+    {
+        /*
+        To prevent user selecting inside the drag source
+        */
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+    }
+    .ChessPiece 
+    {
+        font-size: 9cqw;
+        text-align: center;
+    }
+    .BoardCell 
+    {
+        border: 1px solid black;    
+        width: 10vmin;
+        height: 10vmin;
+        float: left;
+    }
+    .BoardCell[id^="A"]
+    {        
+        clear: both;
+    }
+    .black
+    {
+        background-color: gray;
+    }
+    body
+    {
+        display: grid;
+        place-items: center;
+    }
+    </style>
+</body>
+
+</html>
